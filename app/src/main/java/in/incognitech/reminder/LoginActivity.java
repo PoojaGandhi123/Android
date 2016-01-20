@@ -110,7 +110,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             //TODO - Register User at server side. If existing user then login. Maintain session.
 
             GoogleSignInAccount acct = result.getSignInAccount();
-            startActivity(new Intent(this, HomeActivity.class));
+            startActivity(new Intent(this, VerifyPhoneActivity.class));
             finish();
 //            updateUI(true);
         } else {

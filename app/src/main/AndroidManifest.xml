@@ -2,6 +2,11 @@
 <manifest package="in.incognitech.reminder"
           xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,6 +24,13 @@
             android:name=".HomeActivity"
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme">
+        </activity>
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="6a4db4fb12e3de74c7414508288c653b5bd1d7d4"/>
+
+        <activity android:name=".VerifyPhoneActivity">
         </activity>
     </application>
 
