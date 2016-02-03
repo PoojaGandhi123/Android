@@ -2,11 +2,6 @@ package in.incognitech.reminder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +18,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 
+import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.image.ImageCache;
+import in.incognitech.reminder.util.image.ImageFetcher;
+
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
@@ -30,6 +29,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
+
+    private ImageFetcher mImageFetcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +54,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 .build();
         // [END build_client]
 
-        Bitmap bm = decodeSampledBitmapFromResource(getResources(), R.drawable.img_login_background, 100, 400);
-        ( (ImageView) findViewById(R.id.login_background) ).setBackground( new BitmapDrawable( getResources(), bm ) );
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
+        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
 
         findViewById(R.id.sign_in_button).setOnClickListener( new SignInButton.OnClickListener() {
             @Override
@@ -68,6 +73,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @Override
     public void onStart() {
         super.onStart();
+
+        ImageView imageView = (ImageView) findViewById(R.id.login_background);
+        mImageFetcher.loadImage("https://assetcdn2.500px.org/assets/home/home_cover-15196e45d21c537dc47edb5ea028db85.jpg", imageView);
 
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
@@ -105,17 +113,20 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
-
-            //TODO - Register User at server side. If existing user then login. Maintain session.
-
+            // Signed in successfully, Go to next step to verify number
+            //ToDo: Register on server
             GoogleSignInAccount acct = result.getSignInAccount();
-            startActivity(new Intent(this, VerifyPhoneActivity.class));
+            Intent homeIntent = new Intent(this, HomeActivity.class);
+            homeIntent.putExtra("displayName", acct.getDisplayName());
+            homeIntent.putExtra("email", acct.getEmail());
+            if ( acct.getPhotoUrl() != null ) {
+                homeIntent.putExtra("photoUrl", acct.getPhotoUrl().toString());
+            }
+            startActivity(homeIntent);
             finish();
-//            updateUI(true);
         } else {
             // Signed out, show unauthenticated UI.
-//            updateUI(false);
+            // TODO:Handle Error.
         }
     }
 
@@ -123,7 +134,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
-        Log.d( TAG, "onConnectionFailed:" + connectionResult.toString() );// An unresolvable error has occurred and Google APIs (including Sign-In) will not
+        Log.d(TAG, "onConnectionFailed:" + connectionResult.toString());// An unresolvable error has occurred and Google APIs (including Sign-In) will not
     }
 
     private void showProgressDialog() {
@@ -140,45 +151,5 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.hide();
         }
-    }
-
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate ratios of height and width to requested height and width
-            final int heightRatio = Math.round((float) height / (float) reqHeight);
-            final int widthRatio = Math.round((float) width / (float) reqWidth);
-
-            // Choose the smallest ratio as inSampleSize value, this will guarantee
-            // a final image with both dimensions larger than or equal to the
-            // requested height and width.
-            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-        }
-
-        return inSampleSize;
-    }
-
-    private static Bitmap decodeSampledBitmapFromResource(Resources res, int resId, int reqWidth, int reqHeight) {
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
     }
 }
