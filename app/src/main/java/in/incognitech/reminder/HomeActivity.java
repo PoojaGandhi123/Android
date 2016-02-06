@@ -64,9 +64,6 @@ public class HomeActivity extends AppCompatActivity
                 new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
         cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
 
-        System.out.println(getResources().getDimension(R.dimen.user_avatar_width));
-        System.out.println(getResources().getDimension(R.dimen.user_avatar_height));
-
         mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.user_avatar_width), (int) getResources().getDimension(R.dimen.user_avatar_height));
         mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
 
