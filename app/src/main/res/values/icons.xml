@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fa_arrow_left">&#xf060;</string>
+    <string name="fa_arrow_right">&#xf061;</string>
+    <string name="fa_sign_out">&#xf08b;</string>
+</resources>

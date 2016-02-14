@@ -1,20 +1,20 @@
 package in.incognitech.reminder;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +27,8 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
 
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.FontAwesomeManager;
+import in.incognitech.reminder.util.TextDrawable;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
@@ -89,6 +91,8 @@ public class HomeActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         final View headerView = navigationView.getHeaderView(0);
 
+        setDrawerMenuIcons(navigationView.getMenu());
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String displayName = extras.getString("displayName");
@@ -103,6 +107,36 @@ public class HomeActivity extends AppCompatActivity
             ((TextView) headerView.findViewById(R.id.userDisplayName)).setText(displayName);
             ((TextView) headerView.findViewById(R.id.userEmail)).setText(email);
         }
+    }
+
+    private void setDrawerMenuIcons(Menu menu) {
+        TextDrawable faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_arrow_left));
+        menu.findItem(R.id.nav_outgoing_reminders).setIcon(faIcon);
+
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_arrow_left));
+        menu.findItem(R.id.nav_outgoing_reminders).setIcon(faIcon);
+
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_arrow_right));
+        menu.findItem(R.id.nav_incoming_reminders).setIcon(faIcon);
+
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_sign_out));
+        menu.findItem(R.id.nav_logout).setIcon(faIcon);
     }
 
     @Override
