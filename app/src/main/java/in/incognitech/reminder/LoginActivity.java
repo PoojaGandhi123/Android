@@ -147,7 +147,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 public void onAuthenticated(AuthData authData) {
                     System.out.println(authData);
 //                  System.out.println("Successfully created user account with uid: " + result.get("uid"));
-                    LoginActivity.this.mProgressDialog.hide();
+                    LoginActivity.this.hideProgressDialog();
 
                     LoginActivity.this.redirectToHome(email, displayName, photoUrl);
                 }
@@ -162,7 +162,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                                 public void onSuccess(Map<String, Object> result) {
                                     System.out.println(result);
                                     System.out.println("Successfully created user account with uid: " + result.get("uid"));
-                                    LoginActivity.this.mProgressDialog.hide();
+                                    LoginActivity.this.hideProgressDialog();
                                     LoginActivity.this.redirectToHome(email, displayName, photoUrl);
                                 }
 
