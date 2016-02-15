@@ -16,17 +16,17 @@ import android.widget.ImageView;
 /**
  * Created by Vismit on 2/8/16.
  */
-public class MLRoundedImageView extends ImageView {
+public class RoundedImageView extends ImageView {
 
-    public MLRoundedImageView(Context context) {
+    public RoundedImageView(Context context) {
         super(context);
     }
 
-    public MLRoundedImageView(Context context, AttributeSet attrs) {
+    public RoundedImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MLRoundedImageView(Context context, AttributeSet attrs, int defStyle) {
+    public RoundedImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
@@ -42,7 +42,7 @@ public class MLRoundedImageView extends ImageView {
         if (getWidth() == 0 || getHeight() == 0) {
             return;
         }
-        Bitmap b = ((BitmapDrawable) drawable).getBitmap();
+        Bitmap b = RoundedImageView.drawableToBitmap(drawable);
         Bitmap bitmap = b.copy(Bitmap.Config.ARGB_8888, true);
 
         int w = getWidth(), h = getHeight();
@@ -50,6 +50,28 @@ public class MLRoundedImageView extends ImageView {
         Bitmap roundBitmap = getCroppedBitmap(bitmap, w);
         canvas.drawBitmap(roundBitmap, 0, 0, null);
 
+    }
+
+    public static Bitmap drawableToBitmap (Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if(bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
     public static Bitmap getCroppedBitmap(Bitmap bmp, int radius) {
