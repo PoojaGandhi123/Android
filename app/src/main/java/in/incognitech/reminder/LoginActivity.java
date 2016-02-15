@@ -2,12 +2,17 @@ package in.incognitech.reminder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -18,7 +23,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 
+import java.util.Map;
+
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.HashGenerator;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
@@ -32,11 +40,39 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private ImageFetcher mImageFetcher;
 
+    private Firebase firebaseRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        setupGoogleSignIn();
+
+        setupImageCache();
+
+        Firebase.setAndroidContext(this);
+        firebaseRef = new Firebase(Constants.FIREBASE_APP_URL);
+
+        findViewById(R.id.sign_in_button).setOnClickListener(new SignInButton.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signInIntent, RC_SIGN_IN);
+            }
+        });
+    }
+
+    private void setupImageCache() {
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
+        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
+    }
+
+    private void setupGoogleSignIn() {
         // [START configure_signin]
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -53,21 +89,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         // [END build_client]
-
-        ImageCache.ImageCacheParams cacheParams =
-                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
-
-        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
-        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
-
-        findViewById(R.id.sign_in_button).setOnClickListener( new SignInButton.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                startActivityForResult( signInIntent, RC_SIGN_IN );
-            }
-        });
     }
 
     @Override
@@ -113,21 +134,70 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            // Signed in successfully, Go to next step to verify number
-            //ToDo: Register on server
+            // Signed in successfully, Go to next step
             GoogleSignInAccount acct = result.getSignInAccount();
-            Intent homeIntent = new Intent(this, HomeActivity.class);
-            homeIntent.putExtra("displayName", acct.getDisplayName());
-            homeIntent.putExtra("email", acct.getEmail());
-            if ( acct.getPhotoUrl() != null ) {
-                homeIntent.putExtra("photoUrl", acct.getPhotoUrl().toString());
-            }
-            startActivity(homeIntent);
-            finish();
+            final String displayName = acct.getDisplayName();
+            final String email = acct.getEmail();
+            final Uri photoUrl = acct.getPhotoUrl();
+
+            final String password = HashGenerator.generateMD5(email.toLowerCase().trim());
+            firebaseRef.authWithPassword(email, password, new Firebase.AuthResultHandler() {
+
+                @Override
+                public void onAuthenticated(AuthData authData) {
+                    System.out.println(authData);
+//                  System.out.println("Successfully created user account with uid: " + result.get("uid"));
+                    LoginActivity.this.mProgressDialog.hide();
+
+                    LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+                }
+
+                @Override
+                public void onAuthenticationError(FirebaseError firebaseError) {
+                    String message = "";
+                    switch (firebaseError.getCode()) {
+                        case FirebaseError.USER_DOES_NOT_EXIST:
+                            LoginActivity.this.firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
+                                @Override
+                                public void onSuccess(Map<String, Object> result) {
+                                    System.out.println(result);
+                                    System.out.println("Successfully created user account with uid: " + result.get("uid"));
+                                    LoginActivity.this.mProgressDialog.hide();
+                                    LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+                                }
+
+                                @Override
+                                public void onError(FirebaseError firebaseError) {
+                                    // there was an error
+                                    Toast.makeText(LoginActivity.this, firebaseError.toString(), Toast.LENGTH_LONG).show();
+                                }
+                            });
+                            return;
+                        default:
+                            message = firebaseError.toString();
+                            break;
+                    }
+                    Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+                }
+            });
+
         } else {
             // Signed out, show unauthenticated UI.
-            // TODO:Handle Error.
+            // Handle Error
         }
+    }
+
+    private void redirectToHome(String email, String displayName, Uri photoUrl) {
+        Intent homeIntent = new Intent(LoginActivity.this, HomeActivity.class);
+        homeIntent.putExtra("displayName", displayName);
+        homeIntent.putExtra("email", email);
+        if (photoUrl != null) {
+            homeIntent.putExtra("photoUrl", photoUrl.toString());
+        } else {
+            homeIntent.putExtra("photoUrl", "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim()));
+        }
+        startActivity(homeIntent);
+        finish();
     }
 
     @Override
