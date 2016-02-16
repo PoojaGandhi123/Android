@@ -1,8 +1,15 @@
 package in.incognitech.reminder.model;
 
 import android.location.Location;
+import android.text.format.DateFormat;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import in.incognitech.reminder.util.Utils;
 
 /**
  * Created by udit on 14/02/16.
@@ -14,15 +21,29 @@ public class Reminder {
     private String friend;
     private String type;
     private int priority;
-    private Date date;
-    private Date dateGMT;
-    private Date reminderDate;
-    private Date reminderDateGMT;
+    private String date;
+    private String dateGMT;
+    private String reminderDate;
+    private String reminderDateGMT;
     private boolean isResponded;
     private String response;
     private Location location;
     private String locationType;
     private double locationRadius;
+
+    public Reminder() {
+
+        this.setPriority(10);
+        this.setType("time");
+        this.setIsResponded(false);
+
+        Date date = new Date();
+        String curDate = DateFormat.format("dd-MM-yyyy hh:mm:ss", date).toString();
+        String gmtDate = Utils.toGMT(curDate);
+
+        this.setDate(curDate);
+        this.setDateGMT(gmtDate);
+    }
 
     public String getDescription() {
         return description;
@@ -64,35 +85,35 @@ public class Reminder {
         this.priority = priority;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
-    public Date getDateGMT() {
+    public String getDateGMT() {
         return dateGMT;
     }
 
-    public void setDateGMT(Date dateGMT) {
+    public void setDateGMT(String dateGMT) {
         this.dateGMT = dateGMT;
     }
 
-    public Date getReminderDate() {
+    public String getReminderDate() {
         return reminderDate;
     }
 
-    public void setReminderDate(Date reminderDate) {
+    public void setReminderDate(String reminderDate) {
         this.reminderDate = reminderDate;
     }
 
-    public Date getReminderDateGMT() {
+    public String getReminderDateGMT() {
         return reminderDateGMT;
     }
 
-    public void setReminderDateGMT(Date reminderDateGMT) {
+    public void setReminderDateGMT(String reminderDateGMT) {
         this.reminderDateGMT = reminderDateGMT;
     }
 
@@ -128,11 +149,36 @@ public class Reminder {
         this.locationType = locationType;
     }
 
-    public float getLocationRadius() {
+    public double getLocationRadius() {
         return locationRadius;
     }
 
-    public void setLocationRadius(float locationRadius) {
+    public void setLocationRadius(double locationRadius) {
         this.locationRadius = locationRadius;
+    }
+
+    public Map<String, Object> convertToMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        try {
+            Class reminderClass = Class.forName("in.incognitech.reminder.model.Reminder");
+            Method[] methods = reminderClass.getDeclaredMethods();
+            for (Method m : methods) {
+                if ( m.getName().startsWith("get") || m.getName().startsWith("is") ) {
+                    Object value = (Object) m.invoke(this);
+                    if(m.getName().startsWith("get")) {
+                        map.put(m.getName().substring(3).toLowerCase(), (Object) value);
+                    } else {
+                        map.put(m.getName().substring(2).toLowerCase(), (Object) value);
+                    }
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return map;
     }
 }

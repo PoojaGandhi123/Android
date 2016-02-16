@@ -20,10 +20,13 @@
 
 package in.incognitech.reminder.util;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.StrictMode;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Class containing some static utility methods.
@@ -55,5 +58,17 @@ public class Utils {
 
     public static boolean hasKitKat() {
         return Build.VERSION.SDK_INT >= VERSION_CODES.KITKAT;
+    }
+
+    public static String toGMT(String date) {
+        try {
+            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+            Date curDate = format.parse(date);
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return format.format(curDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

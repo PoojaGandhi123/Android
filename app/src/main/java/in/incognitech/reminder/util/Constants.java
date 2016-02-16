@@ -9,4 +9,5 @@ public class Constants {
     public static String shared_prefs_key = "reminder-shared-prefs";
 
     public static final String FIREBASE_APP_URL = "https://remote-reminder.firebaseio.com/";
+    public static final String FIREBASE_REMINDERS_PATH = "reminders";
 }
