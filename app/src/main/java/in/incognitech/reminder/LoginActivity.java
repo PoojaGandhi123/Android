@@ -25,6 +25,7 @@ import com.google.android.gms.common.api.ResultCallback;
 
 import java.util.Map;
 
+import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.HashGenerator;
 import in.incognitech.reminder.util.image.ImageCache;
@@ -51,8 +52,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         setupImageCache();
 
-        Firebase.setAndroidContext(this);
-        firebaseRef = new Firebase(Constants.FIREBASE_APP_URL);
+        FirebaseAPI.setAndroidContext(this);
+        firebaseRef = FirebaseAPI.getInstance();
 
         findViewById(R.id.sign_in_button).setOnClickListener(new SignInButton.OnClickListener() {
             @Override
