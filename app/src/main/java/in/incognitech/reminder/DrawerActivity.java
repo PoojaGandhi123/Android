@@ -54,6 +54,8 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         setupGoogleSignIn();
 
         setupImageCache();
+
+        this.customSetup(R.id.toolbar, R.id.nav_view);
     }
 
     protected void customSetup(int toolBarID, int navViewID) {
@@ -132,6 +134,13 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
         faIcon.setText(getResources().getText(R.string.fa_arrow_right));
         menu.findItem(R.id.nav_incoming_reminders).setIcon(faIcon);
+
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_users));
+        menu.findItem(R.id.nav_friends).setIcon(faIcon);
 
         faIcon = new TextDrawable(this);
         faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);

@@ -31,6 +31,10 @@
             android:name=".IncomingRemindersActivity"
             android:label="@string/title_activity_incoming_reminders"
             android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".FriendsActivity"
+            android:label="@string/title_activity_friends"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>
