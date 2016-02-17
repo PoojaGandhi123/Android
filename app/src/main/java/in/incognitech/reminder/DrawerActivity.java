@@ -54,11 +54,12 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         setupGoogleSignIn();
 
         setupImageCache();
-
-        this.customSetup(R.id.toolbar, R.id.nav_view);
     }
 
-    protected void customSetup(int toolBarID, int navViewID) {
+    protected void customSetup(int layoutID, int toolBarID, int navViewID) {
+
+        setContentView(R.layout.activity_drawer);
+
         Toolbar toolbar = (Toolbar) findViewById(toolBarID);
         setSupportActionBar(toolbar);
 
@@ -162,12 +163,19 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
         switch (id) {
             case R.id.nav_outgoing_reminders:
-                startActivity(new Intent(this, OutgoingRemindersActivity.class));
-                finish();
+                if ( this.getClass() != OutgoingRemindersActivity.class ) {
+                    startActivity(new Intent(this, OutgoingRemindersActivity.class));
+                }
                 break;
             case R.id.nav_incoming_reminders:
-                startActivity(new Intent(this, IncomingRemindersActivity.class));
-                finish();
+                if ( this.getClass() != IncomingRemindersActivity.class ) {
+                    startActivity(new Intent(this, IncomingRemindersActivity.class));
+                }
+                break;
+            case R.id.nav_friends:
+                if ( this.getClass() != FriendsActivity.class ) {
+                    startActivity(new Intent(this, FriendsActivity.class));
+                }
                 break;
             case R.id.nav_logout:
                 this.logoutUser();
