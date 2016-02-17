@@ -58,7 +58,7 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
     protected void customSetup(int layoutID, int toolBarID, int navViewID) {
 
-        setContentView(R.layout.activity_drawer);
+        setContentView(layoutID);
 
         Toolbar toolbar = (Toolbar) findViewById(toolBarID);
         setSupportActionBar(toolbar);

@@ -41,8 +41,10 @@ public class FriendsActivity extends DrawerActivity {
         friendResolver = this.getContentResolver();
         friendCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
-        SearchView searchView = (SearchView) findViewById(R.id.search_friend);
+        LoadContacts loadContacts = new LoadContacts();
+        loadContacts.execute();
 
+        SearchView searchView = (SearchView) findViewById(R.id.search_friend);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
