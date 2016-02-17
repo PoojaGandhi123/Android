@@ -12,6 +12,6 @@
         android:layout_height="wrap_content"
         android:text="Reminder"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/incoming_reminder_desc" />
+        android:id="@+id/reminder_desc" />
 
 </LinearLayout>

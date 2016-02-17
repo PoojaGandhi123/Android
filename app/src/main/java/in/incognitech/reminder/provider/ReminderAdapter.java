@@ -65,9 +65,9 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
 
         if ( convertView == null ) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(R.layout.outgoing_reminder_row, null);
+            row = inflater.inflate(R.layout.reminder_row, null);
             holder = new ViewHolder();
-            holder.textView = (TextView) row.findViewById(R.id.outgoing_reminder_desc);
+            holder.textView = (TextView) row.findViewById(R.id.reminder_desc);
             row.setTag(holder);
         } else {
             row = convertView;

@@ -23,12 +23,12 @@ public class OutgoingRemindersActivity extends DrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_outgoing_reminders);
+        setContentView(R.layout.activity_reminders);
 
-        super.customSetup(R.id.outgoing_reminders_toolbar, R.id.outgoing_reminders_nav_view);
+        super.customSetup(R.id.toolbar, R.id.nav_view);
 
-        ListView listView = (ListView) findViewById(R.id.list_view_outgoing_reminders);
-        listView.setAdapter(new ReminderAdapter(this, R.layout.outgoing_reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
+        ListView listView = (ListView) findViewById(R.id.list_view_reminders);
+        listView.setAdapter(new ReminderAdapter(this, R.layout.reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
