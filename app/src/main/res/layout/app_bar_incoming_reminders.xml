@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".OutgoingRemindersActivity">
+    tools:context=".IncomingRemindersActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
-            android:id="@+id/outgoing_reminders_toolbar"
+            android:id="@+id/incoming_reminders_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
@@ -22,7 +22,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_outgoing_reminders"/>
+    <include layout="@layout/content_incoming_reminders"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

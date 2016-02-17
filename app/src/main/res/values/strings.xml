@@ -4,6 +4,7 @@
     <string name="loading">Loading…</string>
 
     <string name="title_activity_outgoing_reminders">Outgoing Reminders</string>
+    <string name="title_activity_incoming_reminders">Incoming Reminders</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

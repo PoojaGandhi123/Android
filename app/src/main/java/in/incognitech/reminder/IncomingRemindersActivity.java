@@ -23,15 +23,15 @@ import in.incognitech.reminder.provider.ReminderAdapter;
 import in.incognitech.reminder.util.DateUtils;
 import in.incognitech.reminder.util.Utils;
 
-public class OutgoingRemindersActivity extends DrawerActivity {
+public class IncomingRemindersActivity extends DrawerActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_outgoing_reminders);
+        setContentView(R.layout.activity_incoming_reminders);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.outgoing_reminders_toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.incoming_reminders_toolbar);
         setSupportActionBar(toolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -40,7 +40,7 @@ public class OutgoingRemindersActivity extends DrawerActivity {
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        final NavigationView navigationView = (NavigationView) findViewById(R.id.outgoing_reminders_nav_view);
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.incoming_reminders_nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         final View headerView = navigationView.getHeaderView(0);
 
@@ -61,15 +61,15 @@ public class OutgoingRemindersActivity extends DrawerActivity {
             ((TextView) headerView.findViewById(R.id.userEmail)).setText(email);
         }
 
-        ListView listView = (ListView) findViewById(R.id.list_view_outgoing_reminders);
-        listView.setAdapter(new ReminderAdapter(this, R.layout.outgoing_reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
+        ListView listView = (ListView) findViewById(R.id.list_view_incoming_reminders);
+        listView.setAdapter(new ReminderAdapter(this, R.layout.incoming_reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.INCOMING));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                OutgoingRemindersActivity.this.testingOutLoud();
-                Toast.makeText(OutgoingRemindersActivity.this, "This will goto Create New Reminder Activity.", Toast.LENGTH_LONG).show();
+                IncomingRemindersActivity.this.testingOutLoud();
+                Toast.makeText(IncomingRemindersActivity.this, "This will goto Create New Reminder Activity.", Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -25,6 +25,11 @@ import in.incognitech.reminder.util.Constants;
  */
 public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEventListener/*, ValueEventListener*/ {
 
+    public static int INCOMING = 0;
+    public static int OUTGOING = 1;
+
+    private int reminderType;
+
     static class ViewHolder {
         TextView textView;
     }
@@ -32,8 +37,22 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
     public ReminderAdapter(Context context, int resource, String currentUserID) {
         super(context, resource);
 
+        this.reminderType = INCOMING;
+
         Firebase ref = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH);
-        Query queryRef = ref.orderByChild("author").equalTo(currentUserID);
+        Query queryRef = ref.orderByChild("friend").equalTo(currentUserID);
+        queryRef.addChildEventListener(this);
+    }
+
+    public ReminderAdapter(Context context, int resource, String currentUserID, int reminderType) {
+        super(context, resource);
+
+        this.reminderType = reminderType;
+
+        String queryBy = (this.reminderType==INCOMING) ? "friend" : "author";
+
+        Firebase ref = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH);
+        Query queryRef = ref.orderByChild(queryBy).equalTo(currentUserID);
         queryRef.addChildEventListener(this);
     }
 
