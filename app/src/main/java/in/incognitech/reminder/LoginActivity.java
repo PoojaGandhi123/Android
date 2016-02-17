@@ -28,6 +28,7 @@ import java.util.Map;
 import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.HashGenerator;
+import in.incognitech.reminder.util.Utils;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
@@ -137,50 +138,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         if (result.isSuccess()) {
             // Signed in successfully, Go to next step
             GoogleSignInAccount acct = result.getSignInAccount();
-            final String displayName = acct.getDisplayName();
-            final String email = acct.getEmail();
-            final Uri photoUrl = acct.getPhotoUrl();
+            String displayName = acct.getDisplayName();
+            String email = acct.getEmail();
+            Uri photoUrl = acct.getPhotoUrl();
 
-            final String password = HashGenerator.generateMD5(email.toLowerCase().trim());
-            firebaseRef.authWithPassword(email, password, new Firebase.AuthResultHandler() {
-
-                @Override
-                public void onAuthenticated(AuthData authData) {
-                    System.out.println(authData);
-//                  System.out.println("Successfully created user account with uid: " + result.get("uid"));
-                    LoginActivity.this.hideProgressDialog();
-
-                    LoginActivity.this.redirectToHome(email, displayName, photoUrl);
-                }
-
-                @Override
-                public void onAuthenticationError(FirebaseError firebaseError) {
-                    String message = "";
-                    switch (firebaseError.getCode()) {
-                        case FirebaseError.USER_DOES_NOT_EXIST:
-                            LoginActivity.this.firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
-                                @Override
-                                public void onSuccess(Map<String, Object> result) {
-                                    System.out.println(result);
-                                    System.out.println("Successfully created user account with uid: " + result.get("uid"));
-                                    LoginActivity.this.hideProgressDialog();
-                                    LoginActivity.this.redirectToHome(email, displayName, photoUrl);
-                                }
-
-                                @Override
-                                public void onError(FirebaseError firebaseError) {
-                                    // there was an error
-                                    Toast.makeText(LoginActivity.this, firebaseError.toString(), Toast.LENGTH_LONG).show();
-                                }
-                            });
-                            return;
-                        default:
-                            message = firebaseError.toString();
-                            break;
-                    }
-                    Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
-                }
-            });
+            if ( Utils.getCurrentUserID(this).equals("") ) {
+                loginOnFirebase(email, displayName, photoUrl);
+            } else {
+                hideProgressDialog();
+                redirectToHome(email, displayName, photoUrl);
+            }
 
         } else {
             // Signed out, show unauthenticated UI.
@@ -188,8 +155,52 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
     }
 
+    private void loginOnFirebase(final String email, final String displayName, final Uri photoUrl) {
+        final String password = HashGenerator.generateMD5(email.toLowerCase().trim());
+        firebaseRef.authWithPassword(email, password, new Firebase.AuthResultHandler() {
+
+            @Override
+            public void onAuthenticated(AuthData authData) {
+                Utils.setCurrentUserID(LoginActivity.this, authData.getUid());
+
+                LoginActivity.this.hideProgressDialog();
+
+                LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+            }
+
+            @Override
+            public void onAuthenticationError(FirebaseError firebaseError) {
+                String message = "";
+                switch (firebaseError.getCode()) {
+                    case FirebaseError.USER_DOES_NOT_EXIST:
+                        LoginActivity.this.firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
+                            @Override
+                            public void onSuccess(Map<String, Object> result) {
+                                Utils.setCurrentUserID(LoginActivity.this, (String) result.get("uid"));
+
+                                LoginActivity.this.hideProgressDialog();
+
+                                LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+                            }
+
+                            @Override
+                            public void onError(FirebaseError firebaseError) {
+                                // there was an error
+                                Toast.makeText(LoginActivity.this, firebaseError.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        return;
+                    default:
+                        message = firebaseError.toString();
+                        break;
+                }
+                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void redirectToHome(String email, String displayName, Uri photoUrl) {
-        Intent homeIntent = new Intent(LoginActivity.this, HomeActivity.class);
+        Intent homeIntent = new Intent(LoginActivity.this, OutgoingRemindersActivity.class);
         homeIntent.putExtra("displayName", displayName);
         homeIntent.putExtra("email", email);
         if (photoUrl != null) {

@@ -1,7 +1,6 @@
 package in.incognitech.reminder.model;
 
 import android.location.Location;
-import android.text.format.DateFormat;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,7 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import in.incognitech.reminder.util.Utils;
+import in.incognitech.reminder.util.DateUtils;
 
 /**
  * Created by udit on 14/02/16.
@@ -38,8 +37,8 @@ public class Reminder {
         this.setIsResponded(false);
 
         Date date = new Date();
-        String curDate = DateFormat.format("dd-MM-yyyy hh:mm:ss", date).toString();
-        String gmtDate = Utils.toGMT(curDate);
+        String curDate = DateUtils.toString(date);
+        String gmtDate = DateUtils.toGMT(date);
 
         this.setDate(curDate);
         this.setDateGMT(gmtDate);
@@ -165,11 +164,13 @@ public class Reminder {
             for (Method m : methods) {
                 if ( m.getName().startsWith("get") || m.getName().startsWith("is") ) {
                     Object value = (Object) m.invoke(this);
+                    int offset = 0;
                     if(m.getName().startsWith("get")) {
-                        map.put(m.getName().substring(3).toLowerCase(), (Object) value);
-                    } else {
-                        map.put(m.getName().substring(2).toLowerCase(), (Object) value);
+                        offset = 3;
                     }
+                    String key = m.getName().substring(offset);
+                    key = Character.toLowerCase(key.charAt(0)) + key.substring(1);
+                    map.put(key, (Object) value);
                 }
             }
         } catch (ClassNotFoundException e) {

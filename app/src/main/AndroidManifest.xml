@@ -24,8 +24,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".HomeActivity"
-            android:label="@string/title_activity_home"
+            android:name=".OutgoingRemindersActivity"
+            android:label="@string/title_activity_outgoing_reminders"
             android:theme="@style/AppTheme">
         </activity>
 

@@ -20,13 +20,10 @@
 
 package in.incognitech.reminder.util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * Class containing some static utility methods.
@@ -60,15 +57,15 @@ public class Utils {
         return Build.VERSION.SDK_INT >= VERSION_CODES.KITKAT;
     }
 
-    public static String toGMT(String date) {
-        try {
-            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-            Date curDate = format.parse(date);
-            format.setTimeZone(TimeZone.getTimeZone("GMT"));
-            return format.format(curDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static String getCurrentUserID(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+        String uid = prefs.getString(Constants.SHARED_PREFS_CUR_USER_ID, "");
+        return uid;
+    }
+
+    public static void setCurrentUserID(Context context, String uid) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
+        editor.putString(Constants.SHARED_PREFS_CUR_USER_ID, uid);
+        editor.commit();
     }
 }

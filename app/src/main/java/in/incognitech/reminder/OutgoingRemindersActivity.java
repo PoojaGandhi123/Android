@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,13 +27,20 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
 
+import java.util.Date;
+
+import in.incognitech.reminder.api.FirebaseAPI;
+import in.incognitech.reminder.model.Reminder;
+import in.incognitech.reminder.provider.ReminderAdapter;
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.DateUtils;
 import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.TextDrawable;
+import in.incognitech.reminder.util.Utils;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
-public class HomeActivity extends AppCompatActivity
+public class OutgoingRemindersActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
     private static GoogleApiClient mGoogleApiClient;
@@ -46,14 +53,17 @@ public class HomeActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_outgoing_reminders);
 
         setupGoogleSignIn();
 
         setupImageCache();
 
-        Firebase.setAndroidContext(this);
-        firebaseRef = new Firebase(Constants.FIREBASE_APP_URL);
+        FirebaseAPI.setAndroidContext(this);
+        firebaseRef = FirebaseAPI.getInstance();
+
+        ListView listView = (ListView) findViewById(R.id.list_view_outgoing_reminders);
+        listView.setAdapter(new ReminderAdapter(this, R.layout.outgoing_reminder_row, Utils.getCurrentUserID(this)));
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -62,8 +72,8 @@ public class HomeActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                OutgoingRemindersActivity.this.testingOutLoud();
+                Toast.makeText(OutgoingRemindersActivity.this, "This will goto Create New Reminder Activity.", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -93,6 +103,22 @@ public class HomeActivity extends AppCompatActivity
             ((TextView) headerView.findViewById(R.id.userDisplayName)).setText(displayName);
             ((TextView) headerView.findViewById(R.id.userEmail)).setText(email);
         }
+    }
+
+    private void testingOutLoud() {
+
+        Date date = new Date();
+        String curDate = DateUtils.toString(date);
+        String gmtDate = DateUtils.toGMT(date);
+
+        Reminder test = new Reminder();
+        test.setAuthor(Utils.getCurrentUserID(this));
+        test.setDescription("testing out loud");
+        test.setFriend(Utils.getCurrentUserID(this));
+        test.setReminderDate(curDate);
+        test.setReminderDateGMT(gmtDate);
+
+        ReminderAdapter.addReminder(test);
     }
 
     private void setupImageCache() {
@@ -163,28 +189,6 @@ public class HomeActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.home, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -192,7 +196,6 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_logout ) {
-            firebaseRef.unauth();
             this.logoutUser();
         }
 
@@ -202,6 +205,8 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void logoutUser() {
+        firebaseRef.unauth();
+        Utils.setCurrentUserID(this, "");
         Toast.makeText(getApplicationContext(), "Logged out successfully", Toast.LENGTH_LONG).show();
         PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
         startActivity(new Intent(this, LoginActivity.class));

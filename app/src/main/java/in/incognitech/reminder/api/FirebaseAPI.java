@@ -10,9 +10,12 @@ import in.incognitech.reminder.util.Constants;
  * Created by udit on 16/02/16.
  */
 public class FirebaseAPI {
-    private static Firebase firebaseRef = new Firebase(Constants.FIREBASE_APP_URL);
+    private static Firebase firebaseRef;
 
     public static Firebase getInstance() {
+        if ( firebaseRef == null ) {
+            firebaseRef = new Firebase(Constants.FIREBASE_APP_URL);
+        }
         return firebaseRef;
     }
 

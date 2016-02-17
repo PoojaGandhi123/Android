@@ -6,7 +6,11 @@ package in.incognitech.reminder.util;
 public class Constants {
 
     public static final String IMAGE_CACHE_DIR = "thumbs";
-    public static String shared_prefs_key = "reminder-shared-prefs";
+
+    public static final String DATE_FORMAT = "dd-MM-yyyy hh:mm:ss";
+
+    public static String SHARED_PREFS_KEY = "reminder-shared-prefs";
+    public static String SHARED_PREFS_CUR_USER_ID = "current-user-id";
 
     public static final String FIREBASE_APP_URL = "https://remote-reminder.firebaseio.com/";
     public static final String FIREBASE_REMINDERS_PATH = "reminders";
