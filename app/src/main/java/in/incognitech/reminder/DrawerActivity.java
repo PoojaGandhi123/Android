@@ -5,11 +5,16 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.client.Firebase;
@@ -49,6 +54,40 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         setupGoogleSignIn();
 
         setupImageCache();
+    }
+
+    protected void customSetup(int toolBarID, int navViewID) {
+        Toolbar toolbar = (Toolbar) findViewById(toolBarID);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        final NavigationView navigationView = (NavigationView) findViewById(navViewID);
+        navigationView.setNavigationItemSelectedListener(this);
+        final View headerView = navigationView.getHeaderView(0);
+
+        this.setDrawerMenuIcons(navigationView.getMenu());
+
+        String displayName = Utils.getCurrentUserDisplayName(this);
+        String email = Utils.getCurrentUserEmail(this);
+        String photoUrl = Utils.getCurrentUserPhotoUrl(this);
+
+        if ( ! displayName.equals("") ) {
+            ((TextView) headerView.findViewById(R.id.userDisplayName)).setText(displayName);
+        }
+
+        if ( ! email.equals("") ) {
+            ((TextView) headerView.findViewById(R.id.userEmail)).setText(email);
+        }
+
+        if ( ! photoUrl.equals("") ) {
+            ImageView imageView = (ImageView) headerView.findViewById(R.id.userAvatar);
+            mImageFetcher.loadImage(photoUrl, imageView);
+        }
     }
 
     private void setupGoogleSignIn() {
@@ -134,6 +173,9 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
     private void logoutUser() {
         firebaseRef.unauth();
         Utils.setCurrentUserID(this, "");
+        Utils.setCurrentUserDisplayName(this, "");
+        Utils.setCurrentUserEmail(this, "");
+        Utils.setCurrentUserPhotoUrl(this, "");
         Toast.makeText(getApplicationContext(), "Logged out successfully", Toast.LENGTH_LONG).show();
         PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
         startActivity(new Intent(this, LoginActivity.class));

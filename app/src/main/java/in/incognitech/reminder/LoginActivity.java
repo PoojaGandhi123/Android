@@ -21,7 +21,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import java.util.Map;
 
@@ -186,6 +188,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                             @Override
                             public void onError(FirebaseError firebaseError) {
                                 // there was an error
+                                PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                                 Toast.makeText(LoginActivity.this, firebaseError.toString(), Toast.LENGTH_LONG).show();
                             }
                         });
@@ -194,20 +197,19 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                         message = firebaseError.toString();
                         break;
                 }
+                PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
             }
         });
     }
 
     private void redirectToHome(String email, String displayName, Uri photoUrl) {
+
+        Utils.setCurrentUserDisplayName(this, displayName);
+        Utils.setCurrentUserEmail(this, email);
+        Utils.setCurrentUserPhotoUrl(this, photoUrl != null ? photoUrl.toString() : "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim()));
+
         Intent homeIntent = new Intent(LoginActivity.this, OutgoingRemindersActivity.class);
-        homeIntent.putExtra("displayName", displayName);
-        homeIntent.putExtra("email", email);
-        if (photoUrl != null) {
-            homeIntent.putExtra("photoUrl", photoUrl.toString());
-        } else {
-            homeIntent.putExtra("photoUrl", "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim()));
-        }
         startActivity(homeIntent);
         finish();
     }

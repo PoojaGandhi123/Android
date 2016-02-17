@@ -6,14 +6,8 @@ package in.incognitech.reminder;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -31,35 +25,7 @@ public class OutgoingRemindersActivity extends DrawerActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outgoing_reminders);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.outgoing_reminders_toolbar);
-        setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        final NavigationView navigationView = (NavigationView) findViewById(R.id.outgoing_reminders_nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        final View headerView = navigationView.getHeaderView(0);
-
-        this.setDrawerMenuIcons(navigationView.getMenu());
-
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            String displayName = extras.getString("displayName");
-            String email = extras.getString("email");
-            String photoUrl = extras.getString("photoUrl");
-
-            if ( photoUrl != null ) {
-                ImageView imageView = (ImageView) headerView.findViewById(R.id.userAvatar);
-                mImageFetcher.loadImage(photoUrl, imageView);
-            }
-
-            ((TextView) headerView.findViewById(R.id.userDisplayName)).setText(displayName);
-            ((TextView) headerView.findViewById(R.id.userEmail)).setText(email);
-        }
+        super.customSetup(R.id.outgoing_reminders_toolbar, R.id.outgoing_reminders_nav_view);
 
         ListView listView = (ListView) findViewById(R.id.list_view_outgoing_reminders);
         listView.setAdapter(new ReminderAdapter(this, R.layout.outgoing_reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
