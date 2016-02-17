@@ -65,6 +65,7 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
         this.add(reminder);
+        this.notifyDataSetChanged();
     }
 
     @Override
@@ -72,18 +73,21 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
         this.remove(reminder);
         this.add(reminder);
+        this.notifyDataSetChanged();
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
         this.remove(reminder);
+        this.notifyDataSetChanged();
     }
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
         this.remove(reminder);
+        this.notifyDataSetChanged();
     }
 
     @Override
