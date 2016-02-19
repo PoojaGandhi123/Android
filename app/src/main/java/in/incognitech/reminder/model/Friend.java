@@ -8,6 +8,7 @@ public class Friend {
     private String name;
     private String email;
     private String photoUrl;
+    private String phoneNumber;
 
     public String getName() {
         return name;
@@ -31,5 +32,13 @@ public class Friend {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_margin="5dp"
+        android:descendantFocusability="blocksDescendants"
         android:weightSum="3">
 
         <LinearLayout
@@ -36,6 +37,12 @@
                 android:textSize="18dp" />
 
         </LinearLayout>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Invite"
+            android:id="@+id/inviteFriends" />
 
     </LinearLayout>
 

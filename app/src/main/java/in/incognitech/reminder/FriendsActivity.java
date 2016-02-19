@@ -24,7 +24,7 @@ public class FriendsActivity extends DrawerActivity {
 
     private ArrayList<Friend> friendsList;
     private ContentResolver friendResolver;
-    private Cursor friendCursor;
+    private Cursor friendCursor,PhoneCursor;
     private FriendAdapter friendAdapter;
     private ListView friendListView;
 
@@ -40,6 +40,7 @@ public class FriendsActivity extends DrawerActivity {
         friendsList = new ArrayList<Friend>();
         friendResolver = this.getContentResolver();
         friendCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+        PhoneCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
         LoadContacts loadContacts = new LoadContacts();
         loadContacts.execute();
@@ -93,6 +94,17 @@ public class FriendsActivity extends DrawerActivity {
                     Friend friend = new Friend();
                     friend.setPhotoUrl(image_thumb);
                     friend.setName(name);
+
+                    if(EmailAddr.equals(null) && friend.getName().equals(name))
+                    {
+                        while(PhoneCursor.moveToNext()) {
+                            String phoneNumber = PhoneCursor.getString(PhoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            friend.setPhoneNumber(phoneNumber);
+                        }
+                    }
+
+
+
                     friend.setEmail(EmailAddr);
                     friendsList.add(friend);
                 }

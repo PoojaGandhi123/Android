@@ -32,7 +32,8 @@
         <activity
             android:name=".FriendsActivity"
             android:label="@string/title_activity_friends"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme"
+            android:configChanges="keyboardHidden|orientation|screenLayout"></activity>
     </application>
 
 </manifest>
