@@ -13,25 +13,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_friends">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#5b74a8"
-        android:id="@+id/frag">
-
-        <SearchView
-            android:background="#5b74a8"
-            android:padding="8dp"
-            android:id="@+id/search_friend"
-            android:drawableLeft="@android:drawable/ic_menu_search"
-            android:layout_width="wrap_content"
-            android:singleLine="true"
-            android:layout_gravity="right"
-            android:layout_height="wrap_content"></SearchView>
-    </FrameLayout>
-
     <ListView
-        android:layout_below="@+id/frag"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/list_view_friends"></ListView>

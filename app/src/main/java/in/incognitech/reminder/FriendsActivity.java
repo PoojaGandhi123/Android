@@ -1,11 +1,12 @@
 package in.incognitech.reminder;
 
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -23,7 +24,6 @@ import in.incognitech.reminder.provider.FriendAdapter;
 public class FriendsActivity extends DrawerActivity {
 
     private ArrayList<Friend> friendsList;
-    private ContentResolver friendResolver;
     private Cursor friendCursor;
     private FriendAdapter friendAdapter;
     private ListView friendListView;
@@ -38,31 +38,40 @@ public class FriendsActivity extends DrawerActivity {
         friendListView = (ListView) findViewById(R.id.list_view_friends);
 
         friendsList = new ArrayList<Friend>();
-        friendResolver = this.getContentResolver();
         friendCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
         LoadContacts loadContacts = new LoadContacts();
         loadContacts.execute();
 
-        SearchView searchView = (SearchView) findViewById(R.id.search_friend);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.activity_friends_search, menu);
+
+        MenuItem menuItemSearch = menu.findItem( R.id.search_friend);
+        SearchView searchView = (SearchView) menuItemSearch.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // TODO Auto-generated method stub
+        // TODO Auto-generated method stub
 
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // TODO Auto-generated method stub
+//                 TODO Auto-generated method stub
                 friendAdapter.filter(newText);
                 return false;
             }
         });
 
+        return true;
     }
+
 
     @Override
     protected void onStop() {
