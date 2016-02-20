@@ -15,6 +15,7 @@ import in.incognitech.reminder.util.DateUtils;
  */
 public class Reminder {
 
+    private String key;
     private String description;
     private String author;
     private String friend;
@@ -42,6 +43,14 @@ public class Reminder {
 
         this.setDate(curDate);
         this.setDateGMT(gmtDate);
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getDescription() {
