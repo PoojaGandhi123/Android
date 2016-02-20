@@ -6,11 +6,15 @@ package in.incognitech.reminder.util;
 public class Constants {
 
     public static final String IMAGE_CACHE_DIR = "thumbs";
-    public static String shared_prefs_key = "reminder-shared-prefs";
 
-    public static final String WP_API_REQUEST_NONCE_ENDPOINT = "http://reminder.incognitech.in/wp-json/reminder/v1/get-cookie-nonce/";
-    public static final String WP_API_USERS_ENDPOINT = "http://reminder.incognitech.in/wp-json/wp/v2/users/";
+    public static final String DATE_FORMAT = "dd-MM-yyyy hh:mm:ss";
 
-    public static final int WP_API_READ_TIMEOUT = 10000;
-    public static final int WP_API_CONNECT_TIMEOUT = 10000;
+    public static String SHARED_PREFS_KEY = "reminder-shared-prefs";
+    public static String SHARED_PREFS_CUR_USER_ID = "current-user-id";
+    public static String SHARED_PREFS_CUR_USER_DISPLAY_NAME = "current-user-display-name";
+    public static String SHARED_PREFS_CUR_USER_EMAIL = "current-user-email";
+    public static String SHARED_PREFS_CUR_USER_PHOTO_URL = "current-user-photo-url";
+
+    public static final String FIREBASE_APP_URL = "https://remote-reminder.firebaseio.com/";
+    public static final String FIREBASE_REMINDERS_PATH = "reminders";
 }

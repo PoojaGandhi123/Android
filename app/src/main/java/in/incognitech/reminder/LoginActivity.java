@@ -2,12 +2,17 @@ package in.incognitech.reminder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -16,9 +21,16 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
+import java.util.Map;
+
+import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.HashGenerator;
+import in.incognitech.reminder.util.Utils;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
@@ -32,11 +44,39 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     private ImageFetcher mImageFetcher;
 
+    private Firebase firebaseRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        setupGoogleSignIn();
+
+        setupImageCache();
+
+        FirebaseAPI.setAndroidContext(this);
+        firebaseRef = FirebaseAPI.getInstance();
+
+        findViewById(R.id.sign_in_button).setOnClickListener(new SignInButton.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signInIntent, RC_SIGN_IN);
+            }
+        });
+    }
+
+    private void setupImageCache() {
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
+        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
+    }
+
+    private void setupGoogleSignIn() {
         // [START configure_signin]
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
@@ -53,21 +93,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         // [END build_client]
-
-        ImageCache.ImageCacheParams cacheParams =
-                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
-
-        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
-        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
-
-        findViewById(R.id.sign_in_button).setOnClickListener( new SignInButton.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                startActivityForResult( signInIntent, RC_SIGN_IN );
-            }
-        });
     }
 
     @Override
@@ -113,21 +138,80 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            // Signed in successfully, Go to next step to verify number
-            //ToDo: Register on server
+            // Signed in successfully, Go to next step
             GoogleSignInAccount acct = result.getSignInAccount();
-            Intent homeIntent = new Intent(this, HomeActivity.class);
-            homeIntent.putExtra("displayName", acct.getDisplayName());
-            homeIntent.putExtra("email", acct.getEmail());
-            if ( acct.getPhotoUrl() != null ) {
-                homeIntent.putExtra("photoUrl", acct.getPhotoUrl().toString());
+            String displayName = acct.getDisplayName();
+            String email = acct.getEmail();
+            Uri photoUrl = acct.getPhotoUrl();
+
+            if ( Utils.getCurrentUserID(this).equals("") ) {
+                loginOnFirebase(email, displayName, photoUrl);
+            } else {
+                hideProgressDialog();
+                redirectToHome(email, displayName, photoUrl);
             }
-            startActivity(homeIntent);
-            finish();
+
         } else {
             // Signed out, show unauthenticated UI.
-            // TODO:Handle Error.
+            // Handle Error
         }
+    }
+
+    private void loginOnFirebase(final String email, final String displayName, final Uri photoUrl) {
+        final String password = HashGenerator.generateMD5(email.toLowerCase().trim());
+        firebaseRef.authWithPassword(email, password, new Firebase.AuthResultHandler() {
+
+            @Override
+            public void onAuthenticated(AuthData authData) {
+                Utils.setCurrentUserID(LoginActivity.this, authData.getUid());
+
+                LoginActivity.this.hideProgressDialog();
+
+                LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+            }
+
+            @Override
+            public void onAuthenticationError(FirebaseError firebaseError) {
+                String message = "";
+                switch (firebaseError.getCode()) {
+                    case FirebaseError.USER_DOES_NOT_EXIST:
+                        LoginActivity.this.firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
+                            @Override
+                            public void onSuccess(Map<String, Object> result) {
+                                Utils.setCurrentUserID(LoginActivity.this, (String) result.get("uid"));
+
+                                LoginActivity.this.hideProgressDialog();
+
+                                LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+                            }
+
+                            @Override
+                            public void onError(FirebaseError firebaseError) {
+                                // there was an error
+                                PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                                Toast.makeText(LoginActivity.this, firebaseError.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                        return;
+                    default:
+                        message = firebaseError.toString();
+                        break;
+                }
+                PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void redirectToHome(String email, String displayName, Uri photoUrl) {
+
+        Utils.setCurrentUserDisplayName(this, displayName);
+        Utils.setCurrentUserEmail(this, email);
+        Utils.setCurrentUserPhotoUrl(this, photoUrl != null ? photoUrl.toString() : "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim()));
+
+        Intent homeIntent = new Intent(LoginActivity.this, OutgoingRemindersActivity.class);
+        startActivity(homeIntent);
+        finish();
     }
 
     @Override

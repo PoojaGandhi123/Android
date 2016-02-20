@@ -20,10 +20,10 @@
 
 package in.incognitech.reminder.util;
 
-import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.StrictMode;
 
 /**
  * Class containing some static utility methods.
@@ -55,5 +55,53 @@ public class Utils {
 
     public static boolean hasKitKat() {
         return Build.VERSION.SDK_INT >= VERSION_CODES.KITKAT;
+    }
+
+    public static String getCurrentUserID(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+        String uid = prefs.getString(Constants.SHARED_PREFS_CUR_USER_ID, "");
+        return uid;
+    }
+
+    public static void setCurrentUserID(Context context, String uid) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
+        editor.putString(Constants.SHARED_PREFS_CUR_USER_ID, uid);
+        editor.commit();
+    }
+
+    public static String getCurrentUserDisplayName(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+        String displayName = prefs.getString(Constants.SHARED_PREFS_CUR_USER_DISPLAY_NAME, "");
+        return displayName;
+    }
+
+    public static void setCurrentUserDisplayName(Context context, String displayName) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
+        editor.putString(Constants.SHARED_PREFS_CUR_USER_DISPLAY_NAME, displayName);
+        editor.commit();
+    }
+
+    public static String getCurrentUserEmail(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+        String email = prefs.getString(Constants.SHARED_PREFS_CUR_USER_EMAIL, "");
+        return email;
+    }
+
+    public static void setCurrentUserEmail(Context context, String email) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
+        editor.putString(Constants.SHARED_PREFS_CUR_USER_EMAIL, email);
+        editor.commit();
+    }
+
+    public static String getCurrentUserPhotoUrl(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+        String photoUrl = prefs.getString(Constants.SHARED_PREFS_CUR_USER_PHOTO_URL, "");
+        return photoUrl;
+    }
+
+    public static void setCurrentUserPhotoUrl(Context context, String photoUrl) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
+        editor.putString(Constants.SHARED_PREFS_CUR_USER_PHOTO_URL, photoUrl);
+        editor.commit();
     }
 }

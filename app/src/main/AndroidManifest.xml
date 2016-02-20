@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="in.incognitech.reminder"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="in.incognitech.reminder">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
+        android:name="android.support.multidex.MultiDexApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -17,23 +16,31 @@
         android:theme="@style/AppTheme">
         <activity android:name=".LoginActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".HomeActivity"
-            android:label="@string/title_activity_home"
+            android:name=".OutgoingRemindersActivity"
+            android:label="@string/title_activity_outgoing_reminders"
+            android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".IncomingRemindersActivity"
+            android:label="@string/title_activity_incoming_reminders"
+            android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".FriendsActivity"
+            android:label="@string/title_activity_friends"
             android:theme="@style/AppTheme"></activity>
         <activity
             android:name=".AddReminderActivity"
             android:label="@string/title_activity_add_reminder"
-            android:parentActivityName=".HomeActivity"
+            android:parentActivityName=".OutgoingRemindersActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.incognitech.reminder.HomeActivity" />
+                android:value="in.incognitech.reminder.OutgoingRemindersActivity" />
         </activity>
     </application>
 
