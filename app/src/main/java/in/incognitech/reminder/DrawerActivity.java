@@ -2,6 +2,7 @@ package in.incognitech.reminder;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -149,6 +150,14 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
         faIcon.setText(getResources().getText(R.string.fa_sign_out));
         menu.findItem(R.id.nav_logout).setIcon(faIcon);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 30);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_plus));
+        fab.setImageDrawable(faIcon);
     }
 
     @Override
