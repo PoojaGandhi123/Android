@@ -10,7 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SearchView;
+import android.support.v7.widget.SearchView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ public class FriendsActivity extends DrawerActivity {
         MenuItem menuItemSearch = menu.findItem( R.id.search_friend);
         SearchView searchView = (SearchView) menuItemSearch.getActionView();
         searchView.setIconifiedByDefault(false);
+        searchView.requestFocus();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
