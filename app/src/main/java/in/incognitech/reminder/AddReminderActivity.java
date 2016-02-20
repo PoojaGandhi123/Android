@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -21,6 +23,8 @@ import java.util.Calendar;
 import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.provider.ReminderAdapter;
 import in.incognitech.reminder.util.DateUtils;
+import in.incognitech.reminder.util.FontAwesomeManager;
+import in.incognitech.reminder.util.TextDrawable;
 import in.incognitech.reminder.util.Utils;
 
 public class AddReminderActivity extends AppCompatActivity {
@@ -96,6 +100,25 @@ public class AddReminderActivity extends AppCompatActivity {
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        this.setupIcons();
+    }
+
+    private void setupIcons() {
+        TextDrawable faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 50);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_map_marker));
+        map.setImageDrawable(faIcon);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 30);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_check));
+        fab.setImageDrawable(faIcon);
     }
 
     @Override
