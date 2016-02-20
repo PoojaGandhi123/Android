@@ -5,11 +5,11 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,9 +18,13 @@ import android.widget.TimePicker;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import in.incognitech.reminder.model.Reminder;
+import in.incognitech.reminder.util.Utils;
+
 public class AddReminderActivity extends AppCompatActivity {
 
     TextView date1;
+    EditText description;
     ImageView map;
     int year_x, month_x, day_x, hour_x, minute_x, ampm_x;
     static final int date_id =0, time_id=1;
@@ -36,6 +40,7 @@ public class AddReminderActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         date1 = (TextView) findViewById(R.id.add_textView4);
+        description =(EditText) findViewById(R.id.editText);
 
         year_x=myCalender.get(Calendar.YEAR);
         month_x=myCalender.get(Calendar.MONTH);
@@ -78,8 +83,12 @@ public class AddReminderActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Reminder add_reminder =new Reminder();
+                add_reminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
+                add_reminder.setDescription(description.getText().toString());
+//                add_reminder.setReminderDate(myCalender);
+//                add_reminder.setReminderDateGMT(myCalender);
+
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
