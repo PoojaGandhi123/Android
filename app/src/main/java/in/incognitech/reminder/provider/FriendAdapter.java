@@ -104,12 +104,12 @@ public class FriendAdapter extends ArrayAdapter<Friend> implements Filterable {
         protected void publishResults(CharSequence constraint, FilterResults results) {
             filteredFriendList = (ArrayList<Friend>)results.values;
 //            notifyDataSetChanged();
-            clear();
+            FriendAdapter.this.clear();
             for(int i = 0, l = filteredFriendList.size(); i < l; i++) {
                 add(filteredFriendList.get(i));
             }
 //            notifyDataSetInvalidated();
-            notifyDataSetChanged();
+            FriendAdapter.this.notifyDataSetChanged();
         }
     }
 }

@@ -83,6 +83,7 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
+        reminder.setKey(dataSnapshot.getKey());
         this.add(reminder);
         this.notifyDataSetChanged();
     }
@@ -90,28 +91,55 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        this.remove(reminder);
-        this.add(reminder);
-        this.notifyDataSetChanged();
+        reminder.setKey(dataSnapshot.getKey());
+        int position = this.searchReminderByKey(dataSnapshot.getKey());
+        if(position != -1) {
+            Reminder oldReminder = this.getItem(position);
+            this.remove(oldReminder);
+            this.add(reminder);
+            this.notifyDataSetChanged();
+        }
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        this.remove(reminder);
-        this.notifyDataSetChanged();
+        reminder.setKey(dataSnapshot.getKey());
+        int position = this.searchReminderByKey(dataSnapshot.getKey());
+        if(position != -1) {
+            Reminder oldReminder = this.getItem(position);
+            this.remove(oldReminder);
+            this.notifyDataSetChanged();
+        }
     }
 
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        this.remove(reminder);
-        this.notifyDataSetChanged();
+        reminder.setKey(dataSnapshot.getKey());
+        int position = this.searchReminderByKey(dataSnapshot.getKey());
+        if(position != -1) {
+            Reminder oldReminder = this.getItem(position);
+            this.remove(oldReminder);
+            this.notifyDataSetChanged();
+        }
     }
 
     @Override
     public void onCancelled(FirebaseError firebaseError) {
 
+    }
+
+    public int searchReminderByKey(String key) {
+        int position = -1;
+        for (int i = 0; i<this.getCount();i++) {
+            Reminder temp = this.getItem(i);
+            if(temp.getKey().equals(key)) {
+                position = i;
+                break;
+            }
+        }
+        return position;
     }
 
     public static void addReminder(Reminder reminder) {
