@@ -57,15 +57,12 @@ public class FriendsActivity extends DrawerActivity {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-        // TODO Auto-generated method stub
-
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-//                 TODO Auto-generated method stub
-                friendAdapter.filter(newText);
+                friendAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -131,6 +128,7 @@ public class FriendsActivity extends DrawerActivity {
             });
 
             friendListView.setFastScrollEnabled(true);
+            friendListView.setTextFilterEnabled(true);
         }
     }
 }
