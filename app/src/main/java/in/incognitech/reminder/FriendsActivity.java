@@ -52,6 +52,7 @@ public class FriendsActivity extends DrawerActivity {
 
         MenuItem menuItemSearch = menu.findItem( R.id.search_friend);
         SearchView searchView = (SearchView) menuItemSearch.getActionView();
+        searchView.setIconifiedByDefault(false);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
