@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import in.incognitech.reminder.model.Reminder;
+import in.incognitech.reminder.provider.ReminderAdapter;
+import in.incognitech.reminder.util.DateUtils;
 import in.incognitech.reminder.util.Utils;
 
 public class AddReminderActivity extends AppCompatActivity {
@@ -83,12 +85,14 @@ public class AddReminderActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Reminder add_reminder =new Reminder();
-                add_reminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
-                add_reminder.setDescription(description.getText().toString());
-//                add_reminder.setReminderDate(myCalender);
-//                add_reminder.setReminderDateGMT(myCalender);
+                Reminder newReminder = new Reminder();
+                newReminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
+                newReminder.setDescription(description.getText().toString());
+                newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
+                newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
 
+                ReminderAdapter.addReminder(newReminder);
+                finish();
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
