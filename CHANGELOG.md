@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+- 13c657e fixes #30 - searchview focus issue
+- e75c171 fixes #33 - update reminder list on external change
+- 7d6c707 fixes #31 - filter friend list
+- 0007f44 adds changelog
 - bb569e0 adds new icons for Save & Map Marker button
 - afe6f91 saves reminder on Firebase on create
 - f1023da link Reminder ListViews with Add Reminder activity
