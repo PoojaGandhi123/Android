@@ -4,13 +4,13 @@
 
 package in.incognitech.reminder;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import java.util.Date;
 
@@ -42,8 +42,8 @@ public class IncomingRemindersActivity extends DrawerActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                IncomingRemindersActivity.this.testingOutLoud();
-                Toast.makeText(IncomingRemindersActivity.this, "This will goto Create New Reminder Activity.", Toast.LENGTH_LONG).show();
+                Intent addReminderIntent = new Intent(IncomingRemindersActivity.this, AddReminderActivity.class);
+                startActivity(addReminderIntent);
             }
         });
     }
