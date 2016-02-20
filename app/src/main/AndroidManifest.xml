@@ -22,6 +22,19 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".HomeActivity"
+            android:label="@string/title_activity_home"
+            android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".AddReminderActivity"
+            android:label="@string/title_activity_add_reminder"
+            android:parentActivityName=".HomeActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.incognitech.reminder.HomeActivity" />
+        </activity>
+        <activity
             android:name=".OutgoingRemindersActivity"
             android:label="@string/title_activity_outgoing_reminders"
             android:theme="@style/AppTheme"></activity>
