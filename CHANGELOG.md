@@ -1,0 +1,45 @@
+CHANGELOG
+=========
+
+- bb569e0 adds new icons for Save & Map Marker button
+- afe6f91 saves reminder on Firebase on create
+- f1023da link Reminder ListViews with Add Reminder activity
+- f1dc4c5 new icons added
+- bf9f1a9 fixes icon of Add Reminder button
+- 0ab669f fixes icon of Add Reminder button
+- 24d9123 save reminder
+- 8491472 Merge branch 'master' into add-reminder
+- 37fcadc adds Add Reminder Activity
+- cfdd575 expand searchview field by default
+- 00e4c34 shifted the searchview within toolbar
+- 14e7d17 fixes Contacts Activity crash
+- b521115 fixes Drawer Activity issues & Contacts Provider class updated
+- 4140d33 adds Friends list activity #9, changes for drawer parent activity
+- 81e5951 optimizes Reminder Activities for Outgoing & Incoming
+- aa8629b fixes drawer user details & logout issues
+- 313b6ba adds Incoming Reminders fixes #8 fixes #12, adds DrawerActivity parent class for all activities with Drawer
+- dc61227 fixes list view adapter for outgoing reminders fixes #7, #24
+- b606c26 fetches reminders from Firebase, adds Outgoing Reminders Activity, adds Reminder Adapter class #25, #24, #7
+- f24d09b adds Firebase singleton class fixes #26
+- f7bfab6 adds  functionality, fixes TimeZone issues for dates #25
+- 3b482ae fixes #23 - Adds Reminder Model class
+- de930b5 fixes login issue due to progressbar
+- be695e9 adds Firebase support & register/login user added fixes #21
+- 991083d fixes Rounded Image bug fixes #17
+- c176ff3 adds rounded image class
+- d1bd1e7 adds FontAwesome Support Fixes #18
+- 4713749 removes extra image resource
+- 82922d6 updates drawer menu
+- bda89e1 Fixes #4 - User Authentication (Sign up with Gmail)
+- 0b991b5 removes debug code
+- 6e86ddf removes verify mobile number, updates readme, removed images, adds Disk Cache, updates home activity with user details
+- e1df650 updates readme
+- 2f6a310 adds screenshots & updates readme
+- aa1acc5 adds Mobile number verification with Fabric Digits
+- 143982f adds Google Signin Feature
+- edfeb47 updates configs for Google Services
+- 6c039b1 removes default activity
+- f27ec3e adds google services config file
+- 6a7fd95 Merge branch 'master' of gitlab.com:desaiuditd/reminder
+- 754e70b adds basic project scaffolding
+- 659c279 adds readme
