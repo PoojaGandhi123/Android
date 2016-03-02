@@ -28,13 +28,15 @@ import com.google.android.gms.common.api.Status;
 import java.util.Map;
 
 import in.incognitech.reminder.api.FirebaseAPI;
+import in.incognitech.reminder.provider.StockImageFetcher;
+import in.incognitech.reminder.util.ActivityImageFetcherBridge;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.HashGenerator;
 import in.incognitech.reminder.util.Utils;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
-public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ActivityImageFetcherBridge {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 3001;
@@ -45,6 +47,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private ImageFetcher mImageFetcher;
 
     private Firebase firebaseRef;
+
+    private boolean imageDone = false;
+    private boolean loginDone = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +70,22 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 startActivityForResult(signInIntent, RC_SIGN_IN);
             }
         });
+    }
+
+    public boolean isLoginDone() {
+        return loginDone;
+    }
+
+    public void setLoginDone(boolean loginDone) {
+        this.loginDone = loginDone;
+    }
+
+    public boolean isImageDone() {
+        return imageDone;
+    }
+
+    public void setImageDone(boolean imageDone) {
+        this.imageDone = imageDone;
     }
 
     private void setupImageCache() {
@@ -99,8 +120,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public void onStart() {
         super.onStart();
 
-        ImageView imageView = (ImageView) findViewById(R.id.login_background);
-        mImageFetcher.loadImage("https://assetcdn2.500px.org/assets/home/home_cover-15196e45d21c537dc47edb5ea028db85.jpg", imageView);
+        showProgressDialog();
+        StockImageFetcher stockImageFetcher = new StockImageFetcher(this);
+        stockImageFetcher.execute();
 
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
@@ -113,11 +135,17 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             // If the user has not previously signed in on this device or the sign-in has expired,
             // this asynchronous branch will attempt to sign in the user silently.  Cross-device
             // single sign-on will occur in this branch.
-            showProgressDialog();
+            if(!mProgressDialog.isShowing()) {
+                showProgressDialog();
+            }
             opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
                 @Override
                 public void onResult(GoogleSignInResult googleSignInResult) {
-                    hideProgressDialog();
+
+                    if(isImageDone()) {
+                        hideProgressDialog();
+                    }
+                    setLoginDone(true);
                     handleSignInResult(googleSignInResult);
                 }
             });
@@ -147,7 +175,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             if ( Utils.getCurrentUserID(this).equals("") ) {
                 loginOnFirebase(email, displayName, photoUrl);
             } else {
-                hideProgressDialog();
+                if(isImageDone()) {
+                    hideProgressDialog();
+                }
+                setLoginDone(true);
                 redirectToHome(email, displayName, photoUrl);
             }
 
@@ -165,9 +196,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             public void onAuthenticated(AuthData authData) {
                 Utils.setCurrentUserID(LoginActivity.this, authData.getUid());
 
-                LoginActivity.this.hideProgressDialog();
+                if(isImageDone()) {
+                    hideProgressDialog();
+                }
+                setLoginDone(true);
 
-                LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+                redirectToHome(email, displayName, photoUrl);
             }
 
             @Override
@@ -175,14 +209,17 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 String message = "";
                 switch (firebaseError.getCode()) {
                     case FirebaseError.USER_DOES_NOT_EXIST:
-                        LoginActivity.this.firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
+                        firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
                             @Override
                             public void onSuccess(Map<String, Object> result) {
                                 Utils.setCurrentUserID(LoginActivity.this, (String) result.get("uid"));
 
-                                LoginActivity.this.hideProgressDialog();
+                                if(isImageDone()) {
+                                    hideProgressDialog();
+                                }
+                                setLoginDone(true);
 
-                                LoginActivity.this.redirectToHome(email, displayName, photoUrl);
+                                redirectToHome(email, displayName, photoUrl);
                             }
 
                             @Override
@@ -209,7 +246,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         Utils.setCurrentUserEmail(this, email);
         Utils.setCurrentUserPhotoUrl(this, photoUrl != null ? photoUrl.toString() : "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim()));
 
-        Intent homeIntent = new Intent(LoginActivity.this, OutgoingRemindersActivity.class);
+        Intent homeIntent = new Intent(this, OutgoingRemindersActivity.class);
         startActivity(homeIntent);
         finish();
     }
@@ -235,5 +272,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.hide();
         }
+    }
+
+    @Override
+    public void loadImage(String imageUri) {
+        ImageView imageView = (ImageView) findViewById(R.id.login_background);
+        mImageFetcher.loadImage(imageUri, imageView);
+        hideProgressDialog();
+        if(isLoginDone()) {
+            hideProgressDialog();
+        }
+        setImageDone(true);
     }
 }
