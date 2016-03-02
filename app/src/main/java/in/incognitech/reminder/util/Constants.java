@@ -17,4 +17,5 @@ public class Constants {
 
     public static final String FIREBASE_APP_URL = "https://remote-reminder.firebaseio.com/";
     public static final String FIREBASE_REMINDERS_PATH = "reminders";
+    public static final String FIREBASE_USERS_PATH = "users";
 }

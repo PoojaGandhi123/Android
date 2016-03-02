@@ -3,33 +3,6 @@ package in.incognitech.reminder.model;
 /**
  * Created by udit on 17/02/16.
  */
-public class Friend {
+public class Friend extends User {
 
-    private String name;
-    private String email;
-    private String photoUrl;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhotoUrl() {
-        return photoUrl;
-    }
-
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
 }

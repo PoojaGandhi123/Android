@@ -27,6 +27,7 @@ import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
 
 import in.incognitech.reminder.api.FirebaseAPI;
+import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.TextDrawable;
@@ -198,10 +199,14 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
     private void logoutUser() {
         firebaseRef.unauth();
+        String uid = Utils.getCurrentUserID(this);
+        User.setIsActive(uid, false);
+
         Utils.setCurrentUserID(this, "");
         Utils.setCurrentUserDisplayName(this, "");
         Utils.setCurrentUserEmail(this, "");
         Utils.setCurrentUserPhotoUrl(this, "");
+
         Toast.makeText(getApplicationContext(), "Logged out successfully", Toast.LENGTH_LONG).show();
         PendingResult<Status> pr = Auth.GoogleSignInApi.signOut(mGoogleApiClient);
         startActivity(new Intent(this, LoginActivity.class));
