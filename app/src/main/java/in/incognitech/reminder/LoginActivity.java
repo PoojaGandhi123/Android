@@ -28,6 +28,7 @@ import com.google.android.gms.common.api.Status;
 import java.util.Map;
 
 import in.incognitech.reminder.api.FirebaseAPI;
+import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.provider.StockImageFetcher;
 import in.incognitech.reminder.util.ActivityImageFetcherBridge;
 import in.incognitech.reminder.util.Constants;
@@ -196,7 +197,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             public void onAuthenticated(AuthData authData) {
                 Utils.setCurrentUserID(LoginActivity.this, authData.getUid());
 
-                if(isImageDone()) {
+                User.setIsActive(authData.getUid(), true);
+
+                if (isImageDone()) {
                     hideProgressDialog();
                 }
                 setLoginDone(true);
@@ -214,7 +217,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                             public void onSuccess(Map<String, Object> result) {
                                 Utils.setCurrentUserID(LoginActivity.this, (String) result.get("uid"));
 
-                                if(isImageDone()) {
+                                User.setIsActive((String) result.get("uid"), true);
+
+                                if (isImageDone()) {
                                     hideProgressDialog();
                                 }
                                 setLoginDone(true);
