@@ -27,6 +27,7 @@ public class FriendAdapter extends ArrayAdapter<Friend> implements Filterable {
     static class ViewHolder {
         TextView name;
         TextView email;
+        TextView phone;
     }
 
     public FriendAdapter(Context context, int resource, List<Friend> friendList) {
@@ -51,6 +52,7 @@ public class FriendAdapter extends ArrayAdapter<Friend> implements Filterable {
             holder = new ViewHolder();
             holder.name = (TextView) row.findViewById(R.id.friend_display_name);
             holder.email = (TextView) row.findViewById(R.id.friend_email);
+            holder.phone = (TextView) row.findViewById(R.id.friend_phone);
             row.setTag(holder);
         } else {
             row = convertView;
@@ -59,6 +61,7 @@ public class FriendAdapter extends ArrayAdapter<Friend> implements Filterable {
 
         holder.name.setText(friend.getName());
         holder.email.setText(friend.getEmail());
+        holder.phone.setText(friend.getPhone());
 
         return row;
     }
@@ -78,12 +81,13 @@ public class FriendAdapter extends ArrayAdapter<Friend> implements Filterable {
             if(keyword != null && keyword.toString().length() > 0) {
 
                 ArrayList<Friend> filteredItems = new ArrayList<Friend>();
-                String email, name;
+                String email, name,phone;
 
                 for (int i = 0, l = friendList.size(); i < l; i++) {
                     name = friendList.get(i).getName();
                     email = friendList.get(i).getEmail();
-                    if (name.toLowerCase().contains(keyword) || email.toLowerCase().contains(keyword)) {
+                    phone = friendList.get(i).getPhone();
+                    if (name.toLowerCase().contains(keyword) || email.toLowerCase().contains(keyword)|| phone.toLowerCase().contains(keyword)) {
                         filteredItems.add(friendList.get(i));
                     }
                 }

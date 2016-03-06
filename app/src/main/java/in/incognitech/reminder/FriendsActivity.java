@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.support.v7.widget.SearchView;
 import android.widget.Toast;
@@ -24,9 +25,10 @@ import in.incognitech.reminder.provider.FriendAdapter;
 public class FriendsActivity extends DrawerActivity {
 
     private ArrayList<Friend> friendsList;
-    private Cursor friendCursor;
+    private Cursor friendCursor,PhoneCursor;
     private FriendAdapter friendAdapter;
     private ListView friendListView;
+    private Button inviteFriends;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +38,29 @@ public class FriendsActivity extends DrawerActivity {
         this.customSetup(R.layout.activity_friends, R.id.friend_toolbar, R.id.friend_nav_view);
 
         friendListView = (ListView) findViewById(R.id.list_view_friends);
+        inviteFriends=(Button)findViewById(R.id.button);
 
         friendsList = new ArrayList<Friend>();
-        friendCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+        friendCursor = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, "UPPER(" + ContactsContract.Contacts.DISPLAY_NAME + ") ASC");
+        //PhoneCursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+
+
 
         LoadContacts loadContacts = new LoadContacts();
         loadContacts.execute();
 
     }
+
+
+
+
+
+
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -75,7 +92,11 @@ public class FriendsActivity extends DrawerActivity {
     @Override
     protected void onStop() {
         super.onStop();
+       // pCur.close();
+        //emailCur.close();
         friendCursor.close();
+
+
     }
 
     class LoadContacts extends AsyncTask<Void, Void, Void> {
@@ -87,24 +108,101 @@ public class FriendsActivity extends DrawerActivity {
         @Override
         protected Void doInBackground(Void... voids) {
 
-            if (friendCursor != null) {
-                Log.e("count", "" + friendCursor.getCount());
-                if (friendCursor.getCount() == 0) {
-                    Toast.makeText(FriendsActivity.this, "No contacts in your contact list.", Toast.LENGTH_LONG).show();
-                }
 
-                while (friendCursor.moveToNext()) {
-                    String name = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                    String EmailAddr = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-                    String image_thumb = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
+            if(friendCursor.getCount()>0) {
 
+                while(friendCursor.moveToNext()) {
+
+
+                    String id = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.Contacts._ID));
+                    String name = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                     Friend friend = new Friend();
-                    friend.setPhotoUrl(image_thumb);
-                    friend.setName(name);
-                    friend.setEmail(EmailAddr);
-                    friendsList.add(friend);
+                    if (Integer.parseInt(friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                        System.out.println("name : " + name + ", ID : " + id);
+                        friend.setName(name);
+                        // get the phone number
+                         Cursor pCur = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?", new String[]{id},null);
+                        while (pCur.moveToNext()) {
+                            String phone = pCur.getString(
+                                    pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            friend.setPhone(phone);
+                            System.out.println("phone" + phone);
+                        }
+                    pCur.close();
+
+
+                        //get Email
+
+                       Cursor  emailCur = getContentResolver().query(
+                                ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                                new String[]{id}, null);
+                        while (emailCur.moveToNext()) {
+                            // This would allow you get several email addresses
+                            // if the email addresses were stored in an array
+                            String email = emailCur.getString(
+                                    emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+                            String emailType = emailCur.getString(
+                                    emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+                            friend.setEmail(email);
+
+                            System.out.println("Email " + email + " Email Type : " + emailType);
+                        }
+                     emailCur.close();
+                        friendsList.add(friend);
+                    }
+
                 }
-            } else {
+
+            }
+
+
+
+
+
+//            String name = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+//
+//                    String EmailAddr = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+//                    String phoneNumber = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA));
+//
+//                    String image_thumb = friendCursor.getString(friendCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
+//
+//            Friend friend = new Friend();
+//                    friend.setPhotoUrl(image_thumb);
+//                    friend.setName(name);
+//
+//
+//
+//                    friend.setEmail(EmailAddr);
+//                    friend.setPhone(phoneNumber);
+//                    friendsList.add(friend);
+//                }
+//            }
+
+//            if (PhoneCursor != null) {
+//                Log.e("count", "" + PhoneCursor.getCount());
+//                if (PhoneCursor.getCount() == 0) {
+//                    Toast.makeText(FriendsActivity.this, "No contacts in your contact list.", Toast.LENGTH_LONG).show();
+//                }
+//
+//                while (PhoneCursor.moveToNext()) {
+//                    String name = PhoneCursor.getString(PhoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+//                    String phoneNumber = PhoneCursor.getString(PhoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA));
+//                    String image_thumb = PhoneCursor.getString(PhoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI));
+//
+//                    Friend friend = new Friend();
+//                    friend.setPhotoUrl(image_thumb);
+//                    friend.setName(name);
+//                    friend.setPhone(phoneNumber);
+//                    friendsList.add(friend);
+//                }
+//            }
+
+
+
+
+            else {
                 Log.e("Cursor close 1", "----------------");
             }
 
