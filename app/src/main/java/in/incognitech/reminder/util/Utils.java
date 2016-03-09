@@ -67,6 +67,10 @@ public class Utils {
         return uid;
     }
 
+    public static String getGravatar(String email) {
+        return "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim());
+    }
+
     public static void setCurrentUserID(Context context, String uid) {
         SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
         editor.putString(Constants.SHARED_PREFS_CUR_USER_ID, uid);
