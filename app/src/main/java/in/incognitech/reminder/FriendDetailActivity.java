@@ -8,16 +8,21 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
@@ -72,30 +77,104 @@ public class FriendDetailActivity extends DrawerActivity {
             // multiple times.
             Bitmap photo = retrieveFriendPhoto();
             String name = retrieveFriendName();
-            ArrayList<String> emails = retrieveFriendEmail();
-            ArrayList<String> numbers = retrieveFriendNumber();
+            ArrayList<String[]> emails = retrieveFriendEmail();
+            ArrayList<String[]> numbers = retrieveFriendNumber();
+
+            ArrayList<String> activeEmails = FriendDbHelper.getActiveEmails(this, friendLookupUri.toString());
 
             ((ImageView) findViewById(R.id.friend_avatar)).setImageBitmap(photo);
             ((TextView) findViewById(R.id.friend_display_name)).setText(name);
 
+            float d = getResources().getDisplayMetrics().density;
+
+            LinearLayout.LayoutParams typeMargins = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            typeMargins.setMargins(0, (int)(10*d), 0, 0);
+
+            RelativeLayout.LayoutParams relativeLayoutMargins = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            relativeLayoutMargins.setMargins(0, (int)(5*d), 0, (int)(10*d));
+
+            RelativeLayout.LayoutParams iconAlignment = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            iconAlignment.addRule(RelativeLayout.ALIGN_PARENT_END);
+
             LinearLayout emailContainer = (LinearLayout) findViewById(R.id.friend_email_container);
             for(int i=0;i<emails.size();i++) {
+                String[] emailData = emails.get(i);
+
+                LinearLayout linearLayout = new LinearLayout(this);
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+
                 RelativeLayout relativeLayout = new RelativeLayout(this);
+                relativeLayout.setLayoutParams(relativeLayoutMargins);
+
+                TextView type = new TextView(this);
+                type.setLayoutParams(typeMargins);
+                type.setText(emailData[1]);
+                type.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                linearLayout.addView(type);
+
                 TextView email = new TextView(this);
-                email.setText(emails.get(i));
+                email.setText(emailData[0]);
                 email.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
                 relativeLayout.addView(email);
-                emailContainer.addView(relativeLayout);
+
+                if(activeEmails.contains(emails.get(i))) {
+                    TextView verifiedIcon = new TextView(this);
+                    verifiedIcon.setLayoutParams(iconAlignment);
+                    verifiedIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+                    verifiedIcon.setText(getResources().getString(R.string.fa_check_square_o));
+                    verifiedIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    verifiedIcon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(FriendDetailActivity.this, "YO Goto Reminder Activity", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    relativeLayout.addView(verifiedIcon);
+                } else {
+                    TextView verifiedIcon = new TextView(this);
+                    verifiedIcon.setLayoutParams(iconAlignment);
+                    verifiedIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+                    verifiedIcon.setText(getResources().getString(R.string.fa_share_square_o));
+                    verifiedIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    verifiedIcon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(FriendDetailActivity.this, "YO Goto Invite", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    relativeLayout.addView(verifiedIcon);
+                }
+
+                linearLayout.addView(relativeLayout);
+                emailContainer.addView(linearLayout);
             }
 
             LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
             for(int i=0;i<numbers.size();i++) {
+
+                String[] numberData = numbers.get(i);
+
+                LinearLayout linearLayout = new LinearLayout(this);
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+
                 RelativeLayout relativeLayout = new RelativeLayout(this);
+                relativeLayout.setLayoutParams(relativeLayoutMargins);
+
+                TextView type = new TextView(this);
+                type.setLayoutParams(typeMargins);
+                type.setText(numberData[1]);
+                type.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                linearLayout.addView(type);
+
                 TextView number = new TextView(this);
-                number.setText(numbers.get(i));
+                number.setText(numberData[0]);
                 number.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
                 relativeLayout.addView(number);
-                phoneContainer.addView(relativeLayout);
+
+                // ToDo: Check if email invite button is there. then accordingly show invite numbers
+
+                linearLayout.addView(relativeLayout);
+                phoneContainer.addView(linearLayout);
             }
         }
     }
@@ -115,7 +194,6 @@ public class FriendDetailActivity extends DrawerActivity {
 
             cursorID.close();
         }
-        System.out.println("Contact ID: " + friendID);
         return friendID;
     }
 
@@ -135,19 +213,17 @@ public class FriendDetailActivity extends DrawerActivity {
         }
 
         cursor.close();
-
-        System.out.println("Contact Name: " + friendName);
         return friendName;
     }
 
-    private ArrayList<String> retrieveFriendEmail() {
+    private ArrayList<String[]> retrieveFriendEmail() {
 
-        ArrayList<String> friendEmails = new ArrayList<String>();
+        ArrayList<String[]> friendEmails = new ArrayList<String[]>();
         String friendID = retrieveFriendID();
 
         // Using the contact ID now we will get contact email
         Cursor cursorEmail = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-                new String[]{ContactsContract.CommonDataKinds.Email.DATA},
+                new String[]{ContactsContract.CommonDataKinds.Email.DATA, ContactsContract.CommonDataKinds.Email.TYPE},
 
                 ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
 
@@ -156,39 +232,45 @@ public class FriendDetailActivity extends DrawerActivity {
 
         if (cursorEmail.moveToFirst()) {
             do {
-                friendEmails.add(cursorEmail.getString(cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
+                int type = cursorEmail.getInt(cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+                String[] emailData = {
+                        cursorEmail.getString(cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)),
+                        getResources().getText(ContactsContract.CommonDataKinds.Email.getTypeLabelResource(type)).toString()
+                };
+                friendEmails.add(emailData);
             } while(cursorEmail.moveToNext());
         }
 
         cursorEmail.close();
-
-        System.out.println("Contact Email: " + friendEmails);
         return friendEmails;
     }
 
-    private ArrayList<String> retrieveFriendNumber() {
+    private ArrayList<String[]> retrieveFriendNumber() {
 
-        ArrayList<String> friendNumbers = new ArrayList<String>();
+        ArrayList<String[]> friendNumbers = new ArrayList<String[]>();
         String friendID = retrieveFriendID();
 
         // Using the contact ID now we will get contact phone number
         Cursor cursorPhone = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE},
 
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " +
-                        ContactsContract.CommonDataKinds.Phone.TYPE + " = " +
-                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
 
                 new String[]{friendID},
                 null);
 
         if (cursorPhone.moveToFirst()) {
-            friendNumbers.add(cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
+            do {
+                int type = cursorPhone.getInt(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+                String[] numberData = {
+                        cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)),
+                        getResources().getText(ContactsContract.CommonDataKinds.Phone.getTypeLabelResource(type)).toString()
+                };
+                friendNumbers.add(numberData);
+            } while (cursorPhone.moveToNext());
         }
 
         cursorPhone.close();
-
-        System.out.println("Contact Phone Number: " + friendNumbers);
         return friendNumbers;
     }
 
