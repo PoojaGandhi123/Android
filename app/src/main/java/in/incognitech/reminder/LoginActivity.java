@@ -249,7 +249,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         Utils.setCurrentUserDisplayName(this, displayName);
         Utils.setCurrentUserEmail(this, email);
-        Utils.setCurrentUserPhotoUrl(this, photoUrl != null ? photoUrl.toString() : "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim()));
+        Utils.setCurrentUserPhotoUrl(this, photoUrl != null ? photoUrl.toString() : Utils.getGravatar(email));
 
         Intent homeIntent = new Intent(this, OutgoingRemindersActivity.class);
         startActivity(homeIntent);
