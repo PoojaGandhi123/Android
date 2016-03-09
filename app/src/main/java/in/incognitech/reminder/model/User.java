@@ -15,10 +15,20 @@ import in.incognitech.reminder.util.Constants;
  */
 public class User {
 
+    private String id;
     private String name;
     private String email;
     private String photoUrl;
+    private String number;
     private boolean isActive;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -44,11 +54,19 @@ public class User {
         this.photoUrl = photoUrl;
     }
 
-    public Boolean getIsActive() {
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public boolean isActive() {
         return isActive;
     }
 
-    public void setIsActive(Boolean isActive) {
+    public void setIsActive(boolean isActive) {
         this.isActive = isActive;
     }
 

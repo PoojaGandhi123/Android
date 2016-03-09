@@ -8,10 +8,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.image.ImageCache;
@@ -23,8 +25,6 @@ public class FriendDetailActivity extends DrawerActivity {
     private String friendID;     // friends unique ID
     private ImageView friendAvatar;
     private TextView friendDisplayName;
-    private TextView friendEmail;
-    private TextView friendNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +39,6 @@ public class FriendDetailActivity extends DrawerActivity {
 
         friendAvatar = (ImageView) findViewById(R.id.friend_avatar);
         friendDisplayName = (TextView) findViewById(R.id.friend_display_name);
-        friendEmail = (TextView) findViewById(R.id.friend_email);
-        friendNumber = (TextView) findViewById(R.id.friend_phone);
     }
 
     private void setupImageCache() {
@@ -72,13 +70,25 @@ public class FriendDetailActivity extends DrawerActivity {
             // multiple times.
             Bitmap photo = retrieveFriendPhoto();
             String name = retrieveFriendName();
-            String email = retrieveFriendEmail();
-            String number = retrieveFriendNumber();
+            ArrayList<String> emails = retrieveFriendEmail();
+            ArrayList<String> numbers = retrieveFriendNumber();
 
             ((ImageView) findViewById(R.id.friend_avatar)).setImageBitmap(photo);
             ((TextView) findViewById(R.id.friend_display_name)).setText(name);
-            ((TextView) findViewById(R.id.friend_email)).setText(email);
-            ((TextView) findViewById(R.id.friend_phone)).setText(number);
+
+            LinearLayout emailContainer = (LinearLayout) findViewById(R.id.friend_email_container);
+            for(int i=0;i<emails.size();i++) {
+                TextView email = new TextView(this);
+                email.setText(emails.get(i));
+                emailContainer.addView(email);
+            }
+
+            LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
+            for(int i=0;i<numbers.size();i++) {
+                TextView number = new TextView(this);
+                number.setText(numbers.get(i));
+                phoneContainer.addView(number);
+            }
         }
     }
 
@@ -122,33 +132,35 @@ public class FriendDetailActivity extends DrawerActivity {
         return friendName;
     }
 
-    private String retrieveFriendEmail() {
+    private ArrayList<String> retrieveFriendEmail() {
 
-        String friendEmail = null;
+        ArrayList<String> friendEmails = new ArrayList<String>();
         String friendID = retrieveFriendID();
 
-        // Using the contact ID now we will get contact phone number
-        Cursor cursorPhone = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+        // Using the contact ID now we will get contact email
+        Cursor cursorEmail = getContentResolver().query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                 new String[]{ContactsContract.CommonDataKinds.Email.DATA},
 
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
 
                 new String[]{friendID},
                 null);
 
-        if (cursorPhone.moveToFirst()) {
-            friendEmail = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+        if (cursorEmail.moveToFirst()) {
+            do {
+                friendEmails.add(cursorEmail.getString(cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
+            } while(cursorEmail.moveToNext());
         }
 
-        cursorPhone.close();
+        cursorEmail.close();
 
-        System.out.println("Contact Email: " + friendEmail);
-        return friendEmail;
+        System.out.println("Contact Email: " + friendEmails);
+        return friendEmails;
     }
 
-    private String retrieveFriendNumber() {
+    private ArrayList<String> retrieveFriendNumber() {
 
-        String friendNumber = null;
+        ArrayList<String> friendNumbers = new ArrayList<String>();
         String friendID = retrieveFriendID();
 
         // Using the contact ID now we will get contact phone number
@@ -163,13 +175,13 @@ public class FriendDetailActivity extends DrawerActivity {
                 null);
 
         if (cursorPhone.moveToFirst()) {
-            friendNumber = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            friendNumbers.add(cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
         }
 
         cursorPhone.close();
 
-        System.out.println("Contact Phone Number: " + friendNumber);
-        return friendNumber;
+        System.out.println("Contact Phone Number: " + friendNumbers);
+        return friendNumbers;
     }
 
     private Bitmap retrieveFriendPhoto() {

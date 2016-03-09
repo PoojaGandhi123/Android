@@ -40,7 +40,16 @@
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.incognitech.reminder.OutgoingRemindersActivity" />
+                android:value=".OutgoingRemindersActivity" />
+        </activity>
+        <activity
+            android:name=".FriendDetailActivity"
+            android:label="@string/title_activity_friend_detail"
+            android:parentActivityName=".FriendsActivity"
+            android:theme="@style/AppTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".FriendsActivity" />
         </activity>
     </application>
 
