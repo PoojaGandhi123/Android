@@ -7,8 +7,10 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.TypedValue;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -78,16 +80,22 @@ public class FriendDetailActivity extends DrawerActivity {
 
             LinearLayout emailContainer = (LinearLayout) findViewById(R.id.friend_email_container);
             for(int i=0;i<emails.size();i++) {
+                RelativeLayout relativeLayout = new RelativeLayout(this);
                 TextView email = new TextView(this);
                 email.setText(emails.get(i));
-                emailContainer.addView(email);
+                email.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                relativeLayout.addView(email);
+                emailContainer.addView(relativeLayout);
             }
 
             LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
             for(int i=0;i<numbers.size();i++) {
+                RelativeLayout relativeLayout = new RelativeLayout(this);
                 TextView number = new TextView(this);
                 number.setText(numbers.get(i));
-                phoneContainer.addView(number);
+                number.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                relativeLayout.addView(number);
+                phoneContainer.addView(relativeLayout);
             }
         }
     }

@@ -23,7 +23,7 @@ import in.incognitech.reminder.util.Constants;
 /**
  * Created by udit on 14/02/16.
  */
-public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEventListener/*, ValueEventListener*/ {
+public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEventListener {
 
     public static int INCOMING = 0;
     public static int OUTGOING = 1;
