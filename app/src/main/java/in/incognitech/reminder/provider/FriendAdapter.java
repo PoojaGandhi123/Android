@@ -1,115 +1,280 @@
 package in.incognitech.reminder.provider;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.ContactsContract;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
+import android.widget.AlphabetIndexer;
+import android.widget.CursorAdapter;
+import android.widget.ImageView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Locale;
 
+import in.incognitech.reminder.FriendsActivity;
 import in.incognitech.reminder.R;
-import in.incognitech.reminder.model.Friend;
+import in.incognitech.reminder.query.ContactsQuery;
+import in.incognitech.reminder.util.Utils;
 
 /**
  * Created by udit on 17/02/16.
  */
-public class FriendAdapter extends ArrayAdapter<Friend> implements Filterable {
+public class FriendAdapter extends CursorAdapter implements SectionIndexer {
 
-    private List<Friend> friendList;
-    private List<Friend> filteredFriendList;
-    private FriendFilter friendFilter = new FriendFilter();
+    private Context context;
+    private LayoutInflater mInflater; // Stores the layout inflater
+    private AlphabetIndexer mAlphabetIndexer; // Stores the AlphabetIndexer instance
+    private TextAppearanceSpan highlightTextSpan; // Stores the highlight text appearance style
 
     static class ViewHolder {
+        ImageView image;
         TextView name;
-        TextView email;
     }
 
-    public FriendAdapter(Context context, int resource, List<Friend> friendList) {
-        super(context, resource, friendList);
-        this.friendList = new ArrayList<Friend>();
-        this.friendList.addAll(friendList);
-        this.filteredFriendList = new ArrayList<Friend>();
-        this.filteredFriendList.addAll(friendList);
+    /**
+     * Instantiates a new Contacts Adapter.
+     * @param context A context that has access to the app's layout.
+     */
+    public FriendAdapter(Context context) {
+        super(context, null, 0);
+
+        this.context = context;
+
+        // Stores inflater for use later
+        mInflater = LayoutInflater.from(context);
+
+        // Loads a string containing the English alphabet. To fully localize the app, provide a
+        // strings.xml file in res/values-<x> directories, where <x> is a locale. In the file,
+        // define a string with android:name="alphabet" and contents set to all of the
+        // alphabetic characters in the language in their proper sort order, in upper case if
+        // applicable.
+        final String alphabet = context.getString(R.string.alphabet);
+
+        // Instantiates a new AlphabetIndexer bound to the column used to sort contact names.
+        // The cursor is left null, because it has not yet been retrieved.
+        mAlphabetIndexer = new AlphabetIndexer(null, ContactsQuery.SORT_KEY, alphabet);
+
+        // Defines a span for highlighting the part of a display name that matches the search
+        // string
+        highlightTextSpan = new TextAppearanceSpan(context, R.style.searchTextHiglight);
+    }
+
+    /**
+     * Identifies the start of the search string in the display name column of a Cursor row.
+     * E.g. If displayName was "Adam" and search query (mSearchTerm) was "da" this would
+     * return 1.
+     *
+     * @param displayName The contact display name.
+     * @return The starting position of the search string in the display name, 0-based. The
+     * method returns -1 if the string is not found in the display name, or if the search
+     * string is empty or null.
+     */
+    private int indexOfSearchQuery(String displayName) {
+        String searchTerm = ((FriendsActivity)context).getSearchTerm();
+        if (!TextUtils.isEmpty(searchTerm)) {
+            return displayName.toLowerCase(Locale.getDefault()).indexOf(
+                    searchTerm.toLowerCase(Locale.getDefault()));
+        }
+        return -1;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        // Inflates the list item layout.
+        final View itemLayout =
+                mInflater.inflate(R.layout.friend_row, parent, false);
 
-        Friend friend = filteredFriendList.get(position);
+        // Creates a new ViewHolder in which to store handles to each view resource. This
+        // allows bindView() to retrieve stored references instead of calling findViewById for
+        // each instance of the layout.
+        final ViewHolder holder = new ViewHolder();
+        holder.image = (ImageView) itemLayout.findViewById(R.id.friend_avatar);
+        holder.name = (TextView) itemLayout.findViewById(R.id.friend_display_name);
 
-        View row;
-        ViewHolder holder;
+        // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
+        // available to bindView and other methods that receive a handle to the item view.
+        itemLayout.setTag(holder);
 
-        if ( convertView == null ) {
-            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(R.layout.friend_row, null);
-            holder = new ViewHolder();
-            holder.name = (TextView) row.findViewById(R.id.friend_display_name);
-            holder.email = (TextView) row.findViewById(R.id.friend_email);
-            row.setTag(holder);
+        // Returns the item layout view
+        return itemLayout;
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+
+        String searchTerm = ((FriendsActivity) context).getSearchTerm();
+
+        // Gets handles to individual view resources
+        final ViewHolder holder = (ViewHolder) view.getTag();
+
+        // For Android 3.0 and later, gets the thumbnail image Uri from the current Cursor row.
+        // For platforms earlier than 3.0, this isn't necessary, because the thumbnail is
+        // generated from the other fields in the row.
+        final String photoUri = cursor.getString(ContactsQuery.PHOTO_THUMBNAIL_DATA);
+
+        final String displayName = cursor.getString(ContactsQuery.DISPLAY_NAME);
+
+        final int startIndex = indexOfSearchQuery(displayName);
+
+        if (startIndex == -1) {
+            // If the user didn't do a search, or the search string didn't match a display
+            // name, show the display name without highlighting
+            holder.name.setText(displayName);
+
         } else {
-            row = convertView;
-            holder = (ViewHolder) row.getTag();
+            // If the search string matched the display name, applies a SpannableString to
+            // highlight the search string with the displayed display name
+
+            // Wraps the display name in the SpannableString
+            final SpannableString highlightedName = new SpannableString(displayName);
+
+            // Sets the span to start at the starting point of the match and end at "length"
+            // characters beyond the starting point
+            highlightedName.setSpan(highlightTextSpan, startIndex,
+                    startIndex + searchTerm.length(), 0);
+
+            // Binds the SpannableString to the display name View object
+            holder.name.setText(highlightedName);
         }
 
-        holder.name.setText(friend.getName());
-        holder.email.setText(friend.getEmail());
+        // Processes the QuickContactBadge. A QuickContactBadge first appears as a contact's
+        // thumbnail image with styling that indicates it can be touched for additional
+        // information. When the user clicks the image, the badge expands into a dialog box
+        // containing the contact's details and icons for the built-in apps that can handle
+        // each detail type.
 
-        return row;
+        if(photoUri!=null) {
+            // load Image
+            Bitmap image = loadContactPhotoThumbnail(photoUri);
+            holder.image.setImageBitmap(image);
+        }
+    }
+
+    /**
+     * Overrides swapCursor to move the new Cursor into the AlphabetIndex as well as the
+     * CursorAdapter.
+     */
+    @Override
+    public Cursor swapCursor(Cursor newCursor) {
+        // Update the AlphabetIndexer with new cursor as well
+        mAlphabetIndexer.setCursor(newCursor);
+        return super.swapCursor(newCursor);
+    }
+
+    /**
+     * An override of getCount that simplifies accessing the Cursor. If the Cursor is null,
+     * getCount returns zero. As a result, no test for Cursor == null is needed.
+     */
+    @Override
+    public int getCount() {
+        if (getCursor() == null) {
+            return 0;
+        }
+        return super.getCount();
     }
 
     @Override
-    public Filter getFilter() {
-        return friendFilter;
+    public Object[] getSections() {
+        return mAlphabetIndexer.getSections();
     }
 
-    private class FriendFilter extends Filter {
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        if (getCursor() == null) {
+            return 0;
+        }
+        return mAlphabetIndexer.getPositionForSection(sectionIndex);
+    }
 
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            String keyword = constraint.toString().toLowerCase();
-            FilterResults results = new FilterResults();
+    @Override
+    public int getSectionForPosition(int position) {
+        if (getCursor() == null) {
+            return 0;
+        }
+        return mAlphabetIndexer.getSectionForPosition(position);
+    }
 
-            if(keyword != null && keyword.toString().length() > 0) {
-
-                ArrayList<Friend> filteredItems = new ArrayList<Friend>();
-                String email, name;
-
-                for (int i = 0, l = friendList.size(); i < l; i++) {
-                    name = friendList.get(i).getName();
-                    email = friendList.get(i).getEmail();
-                    if (name.toLowerCase().contains(keyword) || email.toLowerCase().contains(keyword)) {
-                        filteredItems.add(friendList.get(i));
-                    }
-                }
-                results.count = filteredItems.size();
-                results.values = filteredItems;
+    /**
+     * Load a contact photo thumbnail and return it as a Bitmap,
+     * resizing the image to the provided image dimensions as needed.
+     * @param photoData photo ID Prior to Honeycomb, the contact's _ID value.
+     * For Honeycomb and later, the value of PHOTO_THUMBNAIL_URI.
+     * @return A thumbnail Bitmap, sized to the provided width and height.
+     * Returns null if the thumbnail is not found.
+     */
+    private Bitmap loadContactPhotoThumbnail(String photoData) {
+        // Creates an asset file descriptor for the thumbnail file.
+        AssetFileDescriptor afd = null;
+        // try-catch block for file not found
+        try {
+            // Creates a holder for the URI.
+            Uri thumbUri;
+            // If Android 3.0 or later
+            if (Utils.hasHoneycomb()) {
+                // Sets the URI from the incoming PHOTO_THUMBNAIL_URI
+                thumbUri = Uri.parse(photoData);
             } else {
-                synchronized(this)
-                {
-                    results.values = friendList;
-                    results.count = friendList.size();
-                }
+                // Prior to Android 3.0, constructs a photo Uri using _ID
+                /*
+                 * Creates a contact URI from the Contacts content URI
+                 * incoming photoData (_ID)
+                 */
+                final Uri contactUri = Uri.withAppendedPath(ContactsQuery.CONTENT_URI, photoData);
+                /*
+                 * Creates a photo URI by appending the content URI of
+                 * Contacts.Photo.
+                 */
+                thumbUri =
+                        Uri.withAppendedPath(
+                                contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
             }
 
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            filteredFriendList = (ArrayList<Friend>)results.values;
-//            notifyDataSetChanged();
-            FriendAdapter.this.clear();
-            for(int i = 0, l = filteredFriendList.size(); i < l; i++) {
-                add(filteredFriendList.get(i));
+        /*
+         * Retrieves an AssetFileDescriptor object for the thumbnail
+         * URI
+         * using ContentResolver.openAssetFileDescriptor
+         */
+            afd = context.getContentResolver().
+                    openAssetFileDescriptor(thumbUri, "r");
+        /*
+         * Gets a file descriptor from the asset file descriptor.
+         * This object can be used across processes.
+         */
+            FileDescriptor fileDescriptor = afd.getFileDescriptor();
+            // Decode the photo file and return the result as a Bitmap
+            // If the file descriptor is valid
+            if (fileDescriptor != null) {
+                // Decodes the bitmap
+                return BitmapFactory.decodeFileDescriptor(
+                        fileDescriptor, null, null);
             }
-//            notifyDataSetInvalidated();
-            FriendAdapter.this.notifyDataSetChanged();
+            // If the file isn't found
+        } catch (FileNotFoundException e) {
+            /*
+             * Handle file not found errors
+             */
+            // In all cases, close the asset file descriptor
+        } finally {
+            if (afd != null) {
+                try {
+                    afd.close();
+                } catch (IOException e) {}
+            }
         }
+        return null;
     }
+
 }
