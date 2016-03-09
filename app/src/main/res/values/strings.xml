@@ -6,10 +6,15 @@
     <string name="title_activity_outgoing_reminders">Outgoing Reminders</string>
     <string name="title_activity_incoming_reminders">Incoming Reminders</string>
     <string name="title_activity_friends">Friends</string>
+    <string name="title_activity_friend_detail">Friends</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
     <string name="title_activity_add_reminder">Add Reminder</string>
+
+    <!-- Used for the AlphabetIndexer in ContactsListFragment to provide quick navigation by
+             alphabet using ListView fast scroll. -->
+    <string name="alphabet">ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 </resources>

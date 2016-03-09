@@ -11,31 +11,34 @@
         android:layout_margin="5dp"
         android:weightSum="3">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_weight="2.6"
-            android:layout_margin="5dp"
-            android:paddingLeft="10dp"
-            android:layout_gravity="center">
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp" >
+
+            <in.incognitech.reminder.util.image.RoundedImageView
+                android:id="@+id/friend_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/sym_def_app_icon" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/friend_display_name"
                 android:text="User name"
-                android:textSize="18dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/friend_email"
-                android:layout_marginTop="10dp"
-                android:text="Email"
-                android:textSize="18dp" />
-
-        </LinearLayout>
+                android:textSize="18dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/friend_avatar"
+                android:layout_toEndOf="@+id/friend_avatar"
+                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp" />
+        </RelativeLayout>
 
     </LinearLayout>
 
