@@ -153,12 +153,14 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         menu.findItem(R.id.nav_logout).setIcon(faIcon);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        faIcon = new TextDrawable(this);
-        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 30);
-        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
-        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
-        faIcon.setText(getResources().getText(R.string.fa_plus));
-        fab.setImageDrawable(faIcon);
+        if(fab != null) {
+            faIcon = new TextDrawable(this);
+            faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 30);
+            faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+            faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+            faIcon.setText(getResources().getText(R.string.fa_plus));
+            fab.setImageDrawable(faIcon);
+        }
     }
 
     @Override
