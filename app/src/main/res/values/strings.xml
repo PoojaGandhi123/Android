@@ -17,4 +17,10 @@
     <!-- Used for the AlphabetIndexer in ContactsListFragment to provide quick navigation by
              alphabet using ListView fast scroll. -->
     <string name="alphabet">ABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
+
+
+    <!-- TAG Strings for FriendDetailAcitivity - Invite, Share data -->
+    <string name="ACTION_TYPE">ACTION_TYPE</string>
+    <string name="ACTION_CONTEXT">ACTION_CONTEXT</string>
+    <string name="ACTION_DATA">ACTION_DATA</string>
 </resources>

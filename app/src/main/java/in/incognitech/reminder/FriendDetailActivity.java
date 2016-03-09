@@ -1,12 +1,17 @@
 package in.incognitech.reminder;
 
+import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.ContentUris;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,12 +31,18 @@ import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
-public class FriendDetailActivity extends DrawerActivity {
+public class FriendDetailActivity extends DrawerActivity implements View.OnClickListener {
 
     private Uri friendUri;
     private String friendID;     // friends unique ID
-    private ImageView friendAvatar;
-    private TextView friendDisplayName;
+
+    private final static int ACTION_TYPE = R.string.ACTION_TYPE;
+    private final static String ACTION_TYPE_INVITE = "invite";
+    private final static String ACTION_TYPE_REMINDER = "reminder";
+    private final static int ACTION_CONTEXT = R.string.ACTION_CONTEXT;
+    private final static String ACTION_CONTEXT_PHONE = "phone";
+    private final static String ACTION_CONTEXT_EMAIL = "email";
+    private final static int ACTION_DATA = R.string.ACTION_DATA;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +54,67 @@ public class FriendDetailActivity extends DrawerActivity {
         setFriend(uri);
 
         setupImageCache();
+    }
 
-        friendAvatar = (ImageView) findViewById(R.id.friend_avatar);
-        friendDisplayName = (TextView) findViewById(R.id.friend_display_name);
+    @Override
+    public void onClick(View v) {
+        String actionType = (String) v.getTag(ACTION_TYPE);
+        switch (actionType) {
+            case ACTION_TYPE_INVITE:
+                String actionContext = (String) v.getTag(ACTION_CONTEXT);
+                switch (actionContext) {
+                    case ACTION_CONTEXT_PHONE:
+                        String number = (String) v.getTag(ACTION_DATA);
+
+                        Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+                        sendIntent.putExtra("sms_body", "Hey! Install this App! It's awesome!!");
+                        sendIntent.putExtra("address", number);
+                        sendIntent.setData(Uri.parse("smsto:"+number));
+                        sendIntent.setType("vnd.android-dir/mms-sms");
+
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS},101);
+                            return;
+                        }
+
+                        startActivity(sendIntent);
+
+                        break;
+                    case ACTION_CONTEXT_EMAIL:
+                        String email = (String) v.getTag(ACTION_DATA);
+
+//                        Uri uri = Uri.parse("mailto:" + email)
+//                                .buildUpon()
+//                                .appendQueryParameter("subject", "Reminder Invite !")
+//                                .appendQueryParameter("body", "Hey! Install this App! It's awesome!!")
+//                                .build();
+//
+//                        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
+
+                        Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto",email, null));
+                        intent.putExtra(Intent.EXTRA_SUBJECT, "Reminder Invite !");
+                        intent.putExtra(Intent.EXTRA_TEXT, "Hey! Install this App! It's awesome!!");
+
+                        try {
+                            startActivity(intent);
+                        } catch(ActivityNotFoundException e) {
+                            Toast.makeText(this, "Error: No supported app found.", Toast.LENGTH_LONG).show();
+                        }
+                        break;
+                }
+                break;
+            case ACTION_TYPE_REMINDER:
+                String userID = (String) v.getTag(ACTION_DATA);
+                System.out.println(userID);
+                break;
+        }
     }
 
     private void setupImageCache() {
@@ -97,6 +166,7 @@ public class FriendDetailActivity extends DrawerActivity {
             iconAlignment.addRule(RelativeLayout.ALIGN_PARENT_END);
 
             LinearLayout emailContainer = (LinearLayout) findViewById(R.id.friend_email_container);
+            boolean foundVerifiedEmail = false;
             for(int i=0;i<emails.size();i++) {
                 String[] emailData = emails.get(i);
 
@@ -123,58 +193,65 @@ public class FriendDetailActivity extends DrawerActivity {
                     verifiedIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
                     verifiedIcon.setText(getResources().getString(R.string.fa_check_square_o));
                     verifiedIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                    verifiedIcon.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Toast.makeText(FriendDetailActivity.this, "YO Goto Reminder Activity", Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    verifiedIcon.setTag(ACTION_TYPE, ACTION_TYPE_REMINDER);
+                    verifiedIcon.setTag(ACTION_DATA, emailData[0]);
+                    verifiedIcon.setOnClickListener(this);
                     relativeLayout.addView(verifiedIcon);
+                    foundVerifiedEmail = true;
                 } else {
-                    TextView verifiedIcon = new TextView(this);
-                    verifiedIcon.setLayoutParams(iconAlignment);
-                    verifiedIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
-                    verifiedIcon.setText(getResources().getString(R.string.fa_share_square_o));
-                    verifiedIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                    verifiedIcon.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Toast.makeText(FriendDetailActivity.this, "YO Goto Invite", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                    relativeLayout.addView(verifiedIcon);
+                    TextView inviteIcon = new TextView(this);
+                    inviteIcon.setLayoutParams(iconAlignment);
+                    inviteIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+                    inviteIcon.setText(getResources().getString(R.string.fa_share_square_o));
+                    inviteIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    inviteIcon.setTag(ACTION_TYPE, ACTION_TYPE_INVITE);
+                    inviteIcon.setTag(ACTION_CONTEXT, ACTION_CONTEXT_EMAIL);
+                    inviteIcon.setTag(ACTION_DATA, emailData[0]);
+                    inviteIcon.setOnClickListener(this);
+                    relativeLayout.addView(inviteIcon);
                 }
 
                 linearLayout.addView(relativeLayout);
                 emailContainer.addView(linearLayout);
             }
 
-            LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
-            for(int i=0;i<numbers.size();i++) {
+            if ( ! foundVerifiedEmail ) {
+                LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
+                for(int i=0;i<numbers.size();i++) {
 
-                String[] numberData = numbers.get(i);
+                    String[] numberData = numbers.get(i);
 
-                LinearLayout linearLayout = new LinearLayout(this);
-                linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    LinearLayout linearLayout = new LinearLayout(this);
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
 
-                RelativeLayout relativeLayout = new RelativeLayout(this);
-                relativeLayout.setLayoutParams(relativeLayoutMargins);
+                    RelativeLayout relativeLayout = new RelativeLayout(this);
+                    relativeLayout.setLayoutParams(relativeLayoutMargins);
 
-                TextView type = new TextView(this);
-                type.setLayoutParams(typeMargins);
-                type.setText(numberData[1]);
-                type.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-                linearLayout.addView(type);
+                    TextView type = new TextView(this);
+                    type.setLayoutParams(typeMargins);
+                    type.setText(numberData[1]);
+                    type.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                    linearLayout.addView(type);
 
-                TextView number = new TextView(this);
-                number.setText(numberData[0]);
-                number.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-                relativeLayout.addView(number);
+                    TextView number = new TextView(this);
+                    number.setText(numberData[0]);
+                    number.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                    relativeLayout.addView(number);
 
-                // ToDo: Check if email invite button is there. then accordingly show invite numbers
+                    TextView inviteIcon = new TextView(this);
+                    inviteIcon.setLayoutParams(iconAlignment);
+                    inviteIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+                    inviteIcon.setText(getResources().getString(R.string.fa_share_square_o));
+                    inviteIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    inviteIcon.setTag(ACTION_TYPE, ACTION_TYPE_INVITE);
+                    inviteIcon.setTag(ACTION_CONTEXT, ACTION_CONTEXT_PHONE);
+                    inviteIcon.setTag(ACTION_DATA, numberData[0]);
+                    inviteIcon.setOnClickListener(this);
+                    relativeLayout.addView(inviteIcon);
 
-                linearLayout.addView(relativeLayout);
-                phoneContainer.addView(linearLayout);
+                    linearLayout.addView(relativeLayout);
+                    phoneContainer.addView(linearLayout);
+                }
             }
         }
     }

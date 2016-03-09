@@ -19,6 +19,8 @@ public class FriendDbHelper extends SQLiteOpenHelper {
     public static final String email_COLUMN = "email";
     public static final String userID_COLUMN = "userID";
     public static final String isActive_COLUMN = "isActive";
+    public static final String name_COLUMN = "name";
+    public static final String photoURL_COLUMN = "photoURL";
 
     public static final String DATABASE_SCHEMA = String.format(
             "CREATE TABLE %s (" +
@@ -26,8 +28,10 @@ public class FriendDbHelper extends SQLiteOpenHelper {
                 "%s TEXT," +
                 "%s TEXT," +
                 "%s TEXT," +
+                "%s TEXT," +
+                "%s TEXT," +
                 "PRIMARY KEY(%s,%s,%s)" +
-            ")", DATABASE_TABLE, contactURI_COLUMN, email_COLUMN, userID_COLUMN, isActive_COLUMN, contactURI_COLUMN, email_COLUMN, userID_COLUMN);
+            ")", DATABASE_TABLE, contactURI_COLUMN, email_COLUMN, userID_COLUMN, isActive_COLUMN, name_COLUMN, photoURL_COLUMN, contactURI_COLUMN, email_COLUMN, userID_COLUMN);
 
     public FriendDbHelper(Context context) {
         super(context, DATABASE_TABLE, null, DATABASE_VERSION);
@@ -65,5 +69,25 @@ public class FriendDbHelper extends SQLiteOpenHelper {
         }
         db.close();
         return emails;
+    }
+
+    public static String getUserID(Context context, String contactURI) {
+        String userID = null;
+        String where = contactURI_COLUMN + " = ? AND " + isActive_COLUMN + " = 'true'";
+        String whereArgs[] = {contactURI};
+        String groupBy = null;
+        String having = null;
+        String order = null;
+        String[] resultColumns = {
+                userID_COLUMN
+        };
+
+        SQLiteDatabase db = new FriendDbHelper(context).getWritableDatabase();
+        Cursor cursor = db.query(DATABASE_TABLE, resultColumns, where, whereArgs, groupBy, having, order);
+        while (cursor.moveToNext()) {
+            userID = cursor.getString(0);
+        }
+        db.close();
+        return userID;
     }
 }
