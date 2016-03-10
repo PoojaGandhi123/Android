@@ -12,8 +12,8 @@ CHANGELOG
 - 00aa86b adds Friend details activity
 - 5053930 updates Friends list view logic
 - 6524e86 adds null check for fab icon
-- e0b1538 fixes #44
-- 8dcfd46 fixed #43
+- e0b1538 fixes #44 - save isActive flag on Firebase for each user who logs into the app
+- 8dcfd46 fixed #43 - Integrate 500px for random images on Login Screen
 - f4c4acd updates changelog
 - 13c657e fixes #30 - searchview focus issue
 - e75c171 fixes #33 - update reminder list on external change
