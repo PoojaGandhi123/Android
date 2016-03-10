@@ -1,14 +1,9 @@
 package in.incognitech.reminder.model;
 
-import com.firebase.client.Firebase;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-
-import in.incognitech.reminder.api.FirebaseAPI;
-import in.incognitech.reminder.util.Constants;
 
 /**
  * Created by udit on 01/03/16.
@@ -97,8 +92,4 @@ public class User {
         return map;
     }
 
-    public static void setIsActive(String uid, boolean flag) {
-        Firebase usersRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_USERS_PATH);
-        usersRef.child(uid).child("isActive").setValue(flag);
-    }
 }
