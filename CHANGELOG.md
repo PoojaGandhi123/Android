@@ -1,6 +1,20 @@
 CHANGELOG
 =========
 
+- 20b3683 show active users in #9
+- 99b8d20 fixes NPE for Photo URI
+- f13e0bd improves login logic to update user details
+- 4e1ff1d improves logic for user signup & user creation
+- effbdd9 adds util methods for getGravatar
+- ae77e12 Invite/Share functionality for icons on FriendDetailActivitiy
+- de3a317 adds FriendDbHelper & changes FriendDetail activity
+- f8d6df0 changes FriendDetail activity
+- 00aa86b adds Friend details activity
+- 5053930 updates Friends list view logic
+- 6524e86 adds null check for fab icon
+- e0b1538 fixes #44
+- 8dcfd46 fixed #43
+- f4c4acd updates changelog
 - 13c657e fixes #30 - searchview focus issue
 - e75c171 fixes #33 - update reminder list on external change
 - 7d6c707 fixes #31 - filter friend list
