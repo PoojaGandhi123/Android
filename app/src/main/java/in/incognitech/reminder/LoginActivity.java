@@ -2,6 +2,7 @@ package in.incognitech.reminder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -171,8 +172,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             GoogleSignInAccount acct = result.getSignInAccount();
             String displayName = acct.getDisplayName();
             String email = acct.getEmail();
-            String photoUrl = acct.getPhotoUrl().toString();
-            photoUrl = photoUrl != null ? photoUrl.toString() : Utils.getGravatar(email);
+            Uri photoUri = acct.getPhotoUrl();
+            String photoUrl = photoUri != null ? photoUri.toString() : Utils.getGravatar(email);
 
             if ( Utils.getCurrentUserID(this).equals("") ) {
                 loginOnFirebase(email, displayName, photoUrl);
