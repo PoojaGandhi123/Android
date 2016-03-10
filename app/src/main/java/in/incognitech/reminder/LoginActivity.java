@@ -2,7 +2,6 @@ package in.incognitech.reminder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,6 +29,7 @@ import java.util.Map;
 import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.provider.StockImageFetcher;
+import in.incognitech.reminder.provider.UserAdapter;
 import in.incognitech.reminder.util.ActivityImageFetcherBridge;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.HashGenerator;
@@ -171,7 +171,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             GoogleSignInAccount acct = result.getSignInAccount();
             String displayName = acct.getDisplayName();
             String email = acct.getEmail();
-            Uri photoUrl = acct.getPhotoUrl();
+            String photoUrl = acct.getPhotoUrl().toString();
+            photoUrl = photoUrl != null ? photoUrl.toString() : Utils.getGravatar(email);
 
             if ( Utils.getCurrentUserID(this).equals("") ) {
                 loginOnFirebase(email, displayName, photoUrl);
@@ -189,7 +190,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         }
     }
 
-    private void loginOnFirebase(final String email, final String displayName, final Uri photoUrl) {
+    private void loginOnFirebase(final String email, final String displayName, final String photoUrl) {
         final String password = HashGenerator.generateMD5(email.toLowerCase().trim());
         firebaseRef.authWithPassword(email, password, new Firebase.AuthResultHandler() {
 
@@ -197,7 +198,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             public void onAuthenticated(AuthData authData) {
                 Utils.setCurrentUserID(LoginActivity.this, authData.getUid());
 
-                User.setIsActive(authData.getUid(), true);
+                UserAdapter.setIsActive(authData.getUid(), true);
 
                 if (isImageDone()) {
                     hideProgressDialog();
@@ -215,9 +216,15 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                         firebaseRef.createUser(email, password, new Firebase.ValueResultHandler<Map<String, Object>>() {
                             @Override
                             public void onSuccess(Map<String, Object> result) {
-                                Utils.setCurrentUserID(LoginActivity.this, (String) result.get("uid"));
 
-                                User.setIsActive((String) result.get("uid"), true);
+                                Utils.setCurrentUserID(LoginActivity.this, (String) result.get("uid"));
+                                User user = new User();
+                                user.setId((String) result.get("uid"));
+                                user.setName(displayName);
+                                user.setEmail(email);
+                                user.setPhotoUrl(photoUrl);
+                                user.setIsActive(true);
+                                UserAdapter.addUser(user);
 
                                 if (isImageDone()) {
                                     hideProgressDialog();
@@ -245,11 +252,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         });
     }
 
-    private void redirectToHome(String email, String displayName, Uri photoUrl) {
+    private void redirectToHome(String email, String displayName, String photoUrl) {
 
         Utils.setCurrentUserDisplayName(this, displayName);
         Utils.setCurrentUserEmail(this, email);
-        Utils.setCurrentUserPhotoUrl(this, photoUrl != null ? photoUrl.toString() : Utils.getGravatar(email));
+        Utils.setCurrentUserPhotoUrl(this, photoUrl);
 
         Intent homeIntent = new Intent(this, OutgoingRemindersActivity.class);
         startActivity(homeIntent);
