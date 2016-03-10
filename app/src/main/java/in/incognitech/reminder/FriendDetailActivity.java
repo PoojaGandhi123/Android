@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,17 +22,22 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import in.incognitech.reminder.db.FriendDbHelper;
+import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
-public class FriendDetailActivity extends DrawerActivity implements View.OnClickListener {
+public class FriendDetailActivity extends DrawerActivity implements View.OnClickListener, ValueEventListener {
 
     private Uri friendUri;
     private String friendID;     // friends unique ID
@@ -44,6 +50,12 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
     private final static String ACTION_CONTEXT_EMAIL = "email";
     private final static int ACTION_DATA = R.string.ACTION_DATA;
 
+    private ArrayList<String[]> friendEmailList;
+    private boolean[] readFriendEmailFlag;
+    private ArrayList<String[]> friendNumberList;
+    private Bitmap friendPhoto;
+    private String friendName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +63,17 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
         this.customSetup(R.layout.activity_friend_detail, R.id.friend_toolbar, R.id.friend_nav_view);
 
         final Uri uri = getIntent().getData();
-        setFriend(uri);
+
+        friendUri = uri;
+        friendEmailList = retrieveFriendEmail();
+        readFriendEmailFlag = new boolean[friendEmailList.size()];
+        friendNumberList = retrieveFriendNumber();
+        friendPhoto = retrieveFriendPhoto();
+        friendName = retrieveFriendName();
+
+        verifyFriend();
+
+        setFriend();
 
         setupImageCache();
     }
@@ -73,7 +95,6 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
                         sendIntent.setType("vnd.android-dir/mms-sms");
 
                         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-                            // TODO: Consider calling
                             //    ActivityCompat#requestPermissions
                             // here to request the missing permissions, and then overriding
                             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
@@ -89,14 +110,6 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
                         break;
                     case ACTION_CONTEXT_EMAIL:
                         String email = (String) v.getTag(ACTION_DATA);
-
-//                        Uri uri = Uri.parse("mailto:" + email)
-//                                .buildUpon()
-//                                .appendQueryParameter("subject", "Reminder Invite !")
-//                                .appendQueryParameter("body", "Hey! Install this App! It's awesome!!")
-//                                .build();
-//
-//                        Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
 
                         Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto",email, null));
                         intent.putExtra(Intent.EXTRA_SUBJECT, "Reminder Invite !");
@@ -117,42 +130,10 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
         }
     }
 
-    private void setupImageCache() {
-        ImageCache.ImageCacheParams cacheParams =
-                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
 
-        mImageFetcher = new ImageFetcher(this, (int) this.getResources().getDimension(R.dimen.user_avatar_width), (int) this.getResources().getDimension(R.dimen.user_avatar_height));
-        mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
-    }
-
-    /**
-     * Sets the contact that this Fragment displays, or clears the display if the contact argument
-     * is null. This will re-initialize all the views and start the queries to the system contacts
-     * provider to populate the contact information.
-     *
-     * @param friendLookupUri The contact lookup Uri to load and display in this fragment. Passing
-     *                         null is valid and the fragment will display a message that no
-     *                         contact is currently selected instead.
-     */
-    public void setFriend(Uri friendLookupUri) {
-
-        friendUri = friendLookupUri;
-
-        // If the Uri contains data, load the contact's image and load contact details.
-        if (friendLookupUri != null) {
-            // Starts two queries to to retrieve contact information from the Contacts Provider.
-            // restartLoader() is used instead of initLoader() as this method may be called
-            // multiple times.
-            Bitmap photo = retrieveFriendPhoto();
-            String name = retrieveFriendName();
-            ArrayList<String[]> emails = retrieveFriendEmail();
-            ArrayList<String[]> numbers = retrieveFriendNumber();
-
-            ArrayList<String> activeEmails = FriendDbHelper.getActiveEmails(this, friendLookupUri.toString());
-
-            ((ImageView) findViewById(R.id.friend_avatar)).setImageBitmap(photo);
-            ((TextView) findViewById(R.id.friend_display_name)).setText(name);
+        if(dataSnapshot != null) {
 
             float d = getResources().getDisplayMetrics().density;
 
@@ -166,38 +147,39 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
             iconAlignment.addRule(RelativeLayout.ALIGN_PARENT_END);
 
             LinearLayout emailContainer = (LinearLayout) findViewById(R.id.friend_email_container);
-            boolean foundVerifiedEmail = false;
-            for(int i=0;i<emails.size();i++) {
-                String[] emailData = emails.get(i);
 
-                LinearLayout linearLayout = new LinearLayout(this);
-                linearLayout.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout linearLayout = new LinearLayout(this);
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
 
-                RelativeLayout relativeLayout = new RelativeLayout(this);
-                relativeLayout.setLayoutParams(relativeLayoutMargins);
+            RelativeLayout relativeLayout = new RelativeLayout(this);
+            relativeLayout.setLayoutParams(relativeLayoutMargins);
+
+            for(DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                User user = userSnapshot.getValue(User.class);
+                String email = user.getEmail();
 
                 TextView type = new TextView(this);
                 type.setLayoutParams(typeMargins);
-                type.setText(emailData[1]);
+                type.setText(getEmailLabel(email));
                 type.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
                 linearLayout.addView(type);
 
-                TextView email = new TextView(this);
-                email.setText(emailData[0]);
-                email.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-                relativeLayout.addView(email);
+                TextView textViewEmail = new TextView(this);
+                textViewEmail.setText(email);
+                textViewEmail.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+                relativeLayout.addView(textViewEmail);
 
-                if(activeEmails.contains(emails.get(i))) {
+                if(user.isActive()) {
                     TextView verifiedIcon = new TextView(this);
                     verifiedIcon.setLayoutParams(iconAlignment);
                     verifiedIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
                     verifiedIcon.setText(getResources().getString(R.string.fa_check_square_o));
                     verifiedIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    verifiedIcon.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
                     verifiedIcon.setTag(ACTION_TYPE, ACTION_TYPE_REMINDER);
-                    verifiedIcon.setTag(ACTION_DATA, emailData[0]);
+                    verifiedIcon.setTag(ACTION_DATA, user.getId());
                     verifiedIcon.setOnClickListener(this);
                     relativeLayout.addView(verifiedIcon);
-                    foundVerifiedEmail = true;
                 } else {
                     TextView inviteIcon = new TextView(this);
                     inviteIcon.setLayoutParams(iconAlignment);
@@ -206,20 +188,76 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
                     inviteIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
                     inviteIcon.setTag(ACTION_TYPE, ACTION_TYPE_INVITE);
                     inviteIcon.setTag(ACTION_CONTEXT, ACTION_CONTEXT_EMAIL);
-                    inviteIcon.setTag(ACTION_DATA, emailData[0]);
+                    inviteIcon.setTag(ACTION_DATA, email);
                     inviteIcon.setOnClickListener(this);
                     relativeLayout.addView(inviteIcon);
                 }
 
                 linearLayout.addView(relativeLayout);
                 emailContainer.addView(linearLayout);
+
             }
+        }
 
-            if ( ! foundVerifiedEmail ) {
-                LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
-                for(int i=0;i<numbers.size();i++) {
+    }
 
-                    String[] numberData = numbers.get(i);
+    @Override
+    public void onCancelled(FirebaseError firebaseError) {
+        Toast.makeText(this, firebaseError.toString(), Toast.LENGTH_LONG).show();
+    }
+
+    private void setupImageCache() {
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        mImageFetcher = new ImageFetcher(this, (int) this.getResources().getDimension(R.dimen.user_avatar_width), (int) this.getResources().getDimension(R.dimen.user_avatar_height));
+        mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
+    }
+
+    private void verifyFriend() {
+
+        if(friendUri != null) {
+            for(int i=0;i<friendEmailList.size();i++) {
+                String[] emailData = friendEmailList.get(i);
+                Query queryRef = firebaseRef.child(Constants.FIREBASE_USERS_PATH).orderByChild("email").equalTo(emailData[0]);
+                queryRef.addValueEventListener(this);
+            }
+        }
+    }
+
+    /**
+     * Sets the contact that this Fragment displays, or clears the display if the contact argument
+     * is null. This will re-initialize all the views and start the queries to the system contacts
+     * provider to populate the contact information.
+     */
+    public void setFriend() {
+
+        // If the Uri contains data, load the contact's image and load contact details.
+        if (friendUri != null) {
+            // Starts two queries to to retrieve contact information from the Contacts Provider.
+            // restartLoader() is used instead of initLoader() as this method may be called
+            // multiple times.
+
+            ((ImageView) findViewById(R.id.friend_avatar)).setImageBitmap(friendPhoto);
+            ((TextView) findViewById(R.id.friend_display_name)).setText(friendName);
+
+            float d = getResources().getDisplayMetrics().density;
+
+            LinearLayout.LayoutParams typeMargins = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            typeMargins.setMargins(0, (int) (10 * d), 0, 0);
+
+            RelativeLayout.LayoutParams relativeLayoutMargins = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            relativeLayoutMargins.setMargins(0, (int) (5 * d), 0, (int) (10 * d));
+
+            RelativeLayout.LayoutParams iconAlignment = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            iconAlignment.addRule(RelativeLayout.ALIGN_PARENT_END);
+
+            LinearLayout phoneContainer = (LinearLayout) findViewById(R.id.friend_phone_container);
+            if (phoneContainer != null) {
+                for (int i = 0; i < friendNumberList.size(); i++) {
+
+                    String[] numberData = friendNumberList.get(i);
 
                     LinearLayout linearLayout = new LinearLayout(this);
                     linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -371,5 +409,19 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
             e.printStackTrace();
         }
         return photo;
+    }
+
+    private String getEmailLabel(String email) {
+        String label = "Email";
+        if(friendEmailList != null) {
+            for( int i = 0; i < friendEmailList.size() ; i++ ) {
+                String[] emailData = friendEmailList.get(i);
+                if(email.equals(emailData[0])) {
+                    label = emailData[1];
+                    break;
+                }
+            }
+        }
+        return label;
     }
 }
