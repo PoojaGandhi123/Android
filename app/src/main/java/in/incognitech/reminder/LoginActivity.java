@@ -198,7 +198,13 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             public void onAuthenticated(AuthData authData) {
                 Utils.setCurrentUserID(LoginActivity.this, authData.getUid());
 
-                UserAdapter.setIsActive(authData.getUid(), true);
+                User user = new User();
+                user.setId(authData.getUid());
+                user.setName(displayName);
+                user.setEmail(email);
+                user.setPhotoUrl(photoUrl);
+                user.setIsActive(true);
+                UserAdapter.addUser(user);
 
                 if (isImageDone()) {
                     hideProgressDialog();
