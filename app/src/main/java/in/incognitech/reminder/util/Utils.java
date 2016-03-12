@@ -61,14 +61,26 @@ public class Utils {
         return Build.VERSION.SDK_INT >= VERSION_CODES.KITKAT;
     }
 
+    public static String getGravatar(String email) {
+        return "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim());
+    }
+
+    public static void setProcessedContacts(Context context, boolean processed) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE).edit();
+        editor.putBoolean(Constants.SHARED_PREFS_PROCESSED_CONTACTS, processed);
+        editor.commit();
+    }
+
+    public static boolean getProcessedContacts(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+        boolean processed = prefs.getBoolean(Constants.SHARED_PREFS_PROCESSED_CONTACTS, false);
+        return processed;
+    }
+
     public static String getCurrentUserID(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
         String uid = prefs.getString(Constants.SHARED_PREFS_CUR_USER_ID, "");
         return uid;
-    }
-
-    public static String getGravatar(String email) {
-        return "https://secure.gravatar.com/avatar/" + HashGenerator.generateMD5(email.toLowerCase().trim());
     }
 
     public static void setCurrentUserID(Context context, String uid) {
