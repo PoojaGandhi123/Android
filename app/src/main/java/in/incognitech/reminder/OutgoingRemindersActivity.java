@@ -12,11 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
-import java.util.Date;
-
-import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.provider.ReminderAdapter;
-import in.incognitech.reminder.util.DateUtils;
 import in.incognitech.reminder.util.Utils;
 
 public class OutgoingRemindersActivity extends DrawerActivity {
@@ -42,26 +38,10 @@ public class OutgoingRemindersActivity extends DrawerActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent addReminderIntent = new Intent(OutgoingRemindersActivity.this, AddReminderActivity.class);
-                startActivity(addReminderIntent);
+                Intent friendsIntent = new Intent(OutgoingRemindersActivity.this, FriendsActivity.class);
+                startActivity(friendsIntent);
             }
         });
-    }
-
-    private void testingOutLoud() {
-
-        Date date = new Date();
-        String curDate = DateUtils.toString(date);
-        String gmtDate = DateUtils.toGMT(date);
-
-        Reminder test = new Reminder();
-        test.setAuthor(Utils.getCurrentUserID(this));
-        test.setDescription("testing out loud");
-        test.setFriend(Utils.getCurrentUserID(this));
-        test.setReminderDate(curDate);
-        test.setReminderDateGMT(gmtDate);
-
-        ReminderAdapter.addReminder(test);
     }
 
 }
