@@ -42,7 +42,13 @@ public class IncomingRemindersActivity extends DrawerActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                String userID = Utils.getCurrentUserID(IncomingRemindersActivity.this);
+                String displayName = Utils.getCurrentUserDisplayName(IncomingRemindersActivity.this);
+
                 Intent addReminderIntent = new Intent(IncomingRemindersActivity.this, AddReminderActivity.class);
+                addReminderIntent.putExtra("userID", userID);
+                addReminderIntent.putExtra("userDisplayName", displayName + " (Self)" );
                 startActivity(addReminderIntent);
             }
         });
