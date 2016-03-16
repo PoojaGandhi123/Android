@@ -17,6 +17,7 @@ import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.query.ContactsQuery;
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.Utils;
 
 /**
  * Created by udit on 15/03/16.
@@ -78,7 +79,8 @@ public class ContactsProcessor extends IntentService implements ValueEventListen
     public void onDataChange(DataSnapshot dataSnapshot) {
         for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
             User user = postSnapshot.getValue(User.class);
-            if(user!=null) {
+            // skip null & skip current user.
+            if ( user!=null && !user.getEmail().equals( Utils.getCurrentUserEmail(this) ) ) {
                 FriendDbHelper.addFriend(this, user);
             }
             break;
