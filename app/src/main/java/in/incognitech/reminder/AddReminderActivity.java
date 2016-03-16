@@ -130,6 +130,8 @@ public class AddReminderActivity extends AppCompatActivity {
             String userID = extras.getString("userID");
             String userDisplayName = extras.getString("userDisplayName");
             setFriendDetails(userID, userDisplayName);
+        } else {
+            redirectToHome();
         }
     }
 
@@ -154,9 +156,13 @@ public class AddReminderActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if ( requestCode == REQUEST_CODE ) {
-            String userID = data.getStringExtra("userID");
-            String userDisplayName = data.getStringExtra("userDisplayName");
-            setFriendDetails(userID, userDisplayName);
+            if ( data != null ) {
+                String userID = data.getStringExtra("userID");
+                String userDisplayName = data.getStringExtra("userDisplayName");
+                setFriendDetails(userID, userDisplayName);
+            } else {
+                redirectToHome();
+            }
         }
     }
 
