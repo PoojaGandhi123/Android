@@ -42,9 +42,13 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
     protected static GoogleApiClient mGoogleApiClient;
 
-    protected ImageFetcher mImageFetcher;
+    protected ImageFetcher imageFetcher;
 
     protected Firebase firebaseRef;
+
+    public ImageFetcher getImageFetcher() {
+        return imageFetcher;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +95,7 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
         if ( ! photoUrl.equals("") ) {
             ImageView imageView = (ImageView) headerView.findViewById(R.id.userAvatar);
-            mImageFetcher.loadImage(photoUrl, imageView);
+            imageFetcher.loadImage(photoUrl, imageView);
         }
     }
 
@@ -119,8 +123,8 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
                 new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
         cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
 
-        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.user_avatar_width), (int) getResources().getDimension(R.dimen.user_avatar_height));
-        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
+        imageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.user_avatar_width), (int) getResources().getDimension(R.dimen.user_avatar_height));
+        imageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
     }
 
     protected void setDrawerMenuIcons(Menu menu) {

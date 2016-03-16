@@ -31,6 +31,7 @@ import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.provider.StockImageFetcher;
 import in.incognitech.reminder.provider.UserAdapter;
+import in.incognitech.reminder.service.ContactsProcessor;
 import in.incognitech.reminder.util.ActivityImageFetcherBridge;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.HashGenerator;
@@ -46,12 +47,16 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
 
-    private ImageFetcher mImageFetcher;
+    private ImageFetcher imageFetcher;
 
     private Firebase firebaseRef;
 
     private boolean imageDone = false;
     private boolean loginDone = false;
+
+    public ImageFetcher getImageFetcher() {
+        return imageFetcher;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,8 +100,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
         cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
 
-        mImageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
-        mImageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
+        imageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
+        imageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
     }
 
     private void setupGoogleSignIn() {
@@ -265,6 +270,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         Utils.setCurrentUserEmail(this, email);
         Utils.setCurrentUserPhotoUrl(this, photoUrl);
 
+        if ( ! Utils.getProcessedContacts(this) ) {
+            Intent contactProcessorService = new Intent(this, ContactsProcessor.class);
+            startService(contactProcessorService);
+        }
+
         Intent homeIntent = new Intent(this, OutgoingRemindersActivity.class);
         startActivity(homeIntent);
         finish();
@@ -296,7 +306,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @Override
     public void loadImage(String imageUri) {
         ImageView imageView = (ImageView) findViewById(R.id.login_background);
-        mImageFetcher.loadImage(imageUri, imageView);
+        imageFetcher.loadImage(imageUri, imageView);
         hideProgressDialog();
         if(isLoginDone()) {
             hideProgressDialog();

@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.FontAwesomeManager;
-import in.incognitech.reminder.util.image.ImageCache;
-import in.incognitech.reminder.util.image.ImageFetcher;
 
 public class FriendDetailActivity extends DrawerActivity implements View.OnClickListener, ValueEventListener {
 
@@ -74,8 +72,6 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
         verifyFriend();
 
         setFriend();
-
-        setupImageCache();
     }
 
     @Override
@@ -204,15 +200,6 @@ public class FriendDetailActivity extends DrawerActivity implements View.OnClick
     @Override
     public void onCancelled(FirebaseError firebaseError) {
         Toast.makeText(this, firebaseError.toString(), Toast.LENGTH_LONG).show();
-    }
-
-    private void setupImageCache() {
-        ImageCache.ImageCacheParams cacheParams =
-                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
-
-        mImageFetcher = new ImageFetcher(this, (int) this.getResources().getDimension(R.dimen.user_avatar_width), (int) this.getResources().getDimension(R.dimen.user_avatar_height));
-        mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
     }
 
     private void verifyFriend() {

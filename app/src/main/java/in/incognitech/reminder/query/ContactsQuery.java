@@ -4,8 +4,6 @@ import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.provider.ContactsContract;
 
-import in.incognitech.reminder.util.Utils;
-
 /**
  * Created by udit on 04/03/16.
  *
@@ -18,61 +16,52 @@ public class ContactsQuery {
     final static public int QUERY_ID = 1;
 
     // A content URI for the Contacts table
-    final static public Uri CONTENT_URI = ContactsContract.Contacts.CONTENT_URI;
-
-    // The search/filter query Uri
-    final static public Uri FILTER_URI = ContactsContract.Contacts.CONTENT_FILTER_URI;
+    final static public Uri CONTENT_URI = ContactsContract.Data.CONTENT_URI;
 
     // The selection clause for the CursorLoader query. The search criteria defined here
     // restrict results to contacts that have a display name and are linked to visible groups.
     // Notice that the search on the string provided by the user is implemented by appending
     // the search string to CONTENT_FILTER_URI.
     @SuppressLint("InlinedApi")
-    final static public String SELECTION =
-            (Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME) +
-                    "<>''" + " AND " + ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1";
+    final static public String SELECTION = ContactsContract.Data.DISPLAY_NAME_PRIMARY + "<>''" +
+            " AND " + ContactsContract.Data.IN_VISIBLE_GROUP + " = 1" +
+            " AND ( " + ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'" +
+            " OR " + ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE + "' )";
+
+    final static public String FILTER_SELECTION = ContactsContract.Data.DISPLAY_NAME_PRIMARY + "<>''" +
+            " AND " + ContactsContract.Data.IN_VISIBLE_GROUP + " = 1" +
+            " AND " + ContactsContract.Data.DISPLAY_NAME_PRIMARY + " LIKE ?" +
+            " AND ( " + ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE + "'" +
+            " OR " + ContactsContract.Data.MIMETYPE + " = '" + ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE + "' )";
 
     // The desired sort order for the returned Cursor. In Android 3.0 and later, the primary
     // sort key allows for localization. In earlier versions. use the display name as the sort
     // key.
     @SuppressLint("InlinedApi")
-    final static public String SORT_ORDER =
-            Utils.hasHoneycomb() ? ContactsContract.Contacts.SORT_KEY_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME;
+    final static public String SORT_ORDER = ContactsContract.Data.SORT_KEY_PRIMARY;
 
     // The projection for the CursorLoader query. This is a list of columns that the Contacts
     // Provider should return in the Cursor.
     @SuppressLint("InlinedApi")
     final static public String[] PROJECTION = {
 
-            // The contact's row id
-            ContactsContract.Contacts._ID,
-
-            // A pointer to the contact that is guaranteed to be more permanent than _ID. Given
-            // a contact's current _ID value and LOOKUP_KEY, the Contacts Provider can generate
-            // a "permanent" contact URI.
-            ContactsContract.Contacts.LOOKUP_KEY,
-
-            // In platform version 3.0 and later, the Contacts table contains
-            // DISPLAY_NAME_PRIMARY, which either contains the contact's displayable name or
-            // some other useful identifier such as an email address. This column isn't
-            // available in earlier versions of Android, so you must use Contacts.DISPLAY_NAME
-            // instead.
-            Utils.hasHoneycomb() ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME,
-
-            // In Android 3.0 and later, the thumbnail image is pointed to by
-            // PHOTO_THUMBNAIL_URI. In earlier versions, there is no direct pointer; instead,
-            // you generate the pointer from the contact's ID value and constants defined in
-            // android.provider.ContactsContract.Contacts.
-            Utils.hasHoneycomb() ? ContactsContract.Contacts.PHOTO_THUMBNAIL_URI : ContactsContract.Contacts._ID,
-
-            // The sort order column for the returned Cursor, used by the AlphabetIndexer
+            ContactsContract.Data._ID,
+            ContactsContract.Data.CONTACT_ID,
+            ContactsContract.Data.DISPLAY_NAME_PRIMARY,
+            ContactsContract.Data.PHOTO_URI,
+            ContactsContract.Data.MIMETYPE,
+            ContactsContract.CommonDataKinds.Email.ADDRESS,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
             SORT_ORDER,
     };
 
     // The query column numbers which map to each value in the projection
     final static public int ID = 0;
-    final static public int LOOKUP_KEY = 1;
+    final static public int CONTACT_ID = 1;
     final static public int DISPLAY_NAME = 2;
-    final static public int PHOTO_THUMBNAIL_DATA = 3;
-    final static public int SORT_KEY = 4;
+    final static public int PHOTO_URI = 3;
+    final static public int MIMETYPE = 4;
+    final static public int EMAIL = 5;
+    final static public int PHONE_NUMBER = 6;
+    final static public int SORT_KEY = 7;
 }

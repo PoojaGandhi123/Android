@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import in.incognitech.reminder.FriendsActivity;
 import in.incognitech.reminder.R;
+import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.query.ContactsQuery;
 import in.incognitech.reminder.util.Utils;
 
@@ -42,14 +43,19 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
     static class ViewHolder {
         ImageView image;
         TextView name;
+        TextView detail;
+    }
+
+    public FriendAdapter(Context context) {
+        this(context, null);
     }
 
     /**
      * Instantiates a new Contacts Adapter.
      * @param context A context that has access to the app's layout.
      */
-    public FriendAdapter(Context context) {
-        super(context, null, 0);
+    public FriendAdapter(Context context, Cursor cursor) {
+        super(context, cursor, 0);
 
         this.context = context;
 
@@ -103,6 +109,7 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
         final ViewHolder holder = new ViewHolder();
         holder.image = (ImageView) itemLayout.findViewById(R.id.friend_avatar);
         holder.name = (TextView) itemLayout.findViewById(R.id.friend_display_name);
+        holder.detail = (TextView) itemLayout.findViewById(R.id.friend_detail);
 
         // Stores the resourceHolder instance in itemLayout. This makes resourceHolder
         // available to bindView and other methods that receive a handle to the item view.
@@ -120,46 +127,66 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
         // Gets handles to individual view resources
         final ViewHolder holder = (ViewHolder) view.getTag();
 
-        // For Android 3.0 and later, gets the thumbnail image Uri from the current Cursor row.
-        // For platforms earlier than 3.0, this isn't necessary, because the thumbnail is
-        // generated from the other fields in the row.
-        final String photoUri = cursor.getString(ContactsQuery.PHOTO_THUMBNAIL_DATA);
+        if ( searchTerm != null ) {
 
-        final String displayName = cursor.getString(ContactsQuery.DISPLAY_NAME);
+            // For Android 3.0 and later, gets the thumbnail image Uri from the current Cursor row.
+            // For platforms earlier than 3.0, this isn't necessary, because the thumbnail is
+            // generated from the other fields in the row.
+            String photoUri = cursor.getString(ContactsQuery.PHOTO_URI);
 
-        final int startIndex = indexOfSearchQuery(displayName);
+            String displayName = cursor.getString(ContactsQuery.DISPLAY_NAME);
 
-        if (startIndex == -1) {
-            // If the user didn't do a search, or the search string didn't match a display
-            // name, show the display name without highlighting
-            holder.name.setText(displayName);
+            String mimeType = cursor.getString(ContactsQuery.MIMETYPE);
+            if (mimeType.equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
+                String detail = cursor.getString(ContactsQuery.EMAIL);
+                holder.detail.setText(detail);
+            } else if (mimeType.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
+                String detail = cursor.getString(ContactsQuery.EMAIL);
+                holder.detail.setText(detail);
+            }
 
+            final int startIndex = indexOfSearchQuery(displayName);
+
+            if (startIndex == -1) {
+                // If the user didn't do a search, or the search string didn't match a display
+                // name, show the display name without highlighting
+                holder.name.setText(displayName);
+
+            } else {
+                // If the search string matched the display name, applies a SpannableString to
+                // highlight the search string with the displayed display name
+
+                // Wraps the display name in the SpannableString
+                final SpannableString highlightedName = new SpannableString(displayName);
+
+                // Sets the span to start at the starting point of the match and end at "length"
+                // characters beyond the starting point
+                highlightedName.setSpan(highlightTextSpan, startIndex,
+                        startIndex + searchTerm.length(), 0);
+
+                // Binds the SpannableString to the display name View object
+                holder.name.setText(highlightedName);
+            }
+
+            // Processes the QuickContactBadge. A QuickContactBadge first appears as a contact's
+            // thumbnail image with styling that indicates it can be touched for additional
+            // information. When the user clicks the image, the badge expands into a dialog box
+            // containing the contact's details and icons for the built-in apps that can handle
+            // each detail type.
+
+            if (photoUri != null) {
+                // load Image
+                //            Bitmap image = loadContactPhotoThumbnail(photoUri);
+                holder.image.setImageURI(Uri.parse(photoUri));
+            }
         } else {
-            // If the search string matched the display name, applies a SpannableString to
-            // highlight the search string with the displayed display name
+            String displayName = cursor.getString(cursor.getColumnIndex(FriendDbHelper.name_COLUMN));
+            String email = cursor.getString(cursor.getColumnIndex(FriendDbHelper.email_COLUMN));
+            String photoUrl = cursor.getString(cursor.getColumnIndex(FriendDbHelper.photoURL_COLUMN));
 
-            // Wraps the display name in the SpannableString
-            final SpannableString highlightedName = new SpannableString(displayName);
-
-            // Sets the span to start at the starting point of the match and end at "length"
-            // characters beyond the starting point
-            highlightedName.setSpan(highlightTextSpan, startIndex,
-                    startIndex + searchTerm.length(), 0);
-
-            // Binds the SpannableString to the display name View object
-            holder.name.setText(highlightedName);
-        }
-
-        // Processes the QuickContactBadge. A QuickContactBadge first appears as a contact's
-        // thumbnail image with styling that indicates it can be touched for additional
-        // information. When the user clicks the image, the badge expands into a dialog box
-        // containing the contact's details and icons for the built-in apps that can handle
-        // each detail type.
-
-        if(photoUri!=null) {
-            // load Image
-            Bitmap image = loadContactPhotoThumbnail(photoUri);
-            holder.image.setImageBitmap(image);
+            holder.name.setText(displayName);
+            holder.detail.setText(email);
+            ((FriendsActivity)context).getImageFetcher().loadImage(photoUrl, holder.image);
         }
     }
 

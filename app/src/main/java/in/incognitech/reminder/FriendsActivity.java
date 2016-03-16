@@ -4,41 +4,40 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 
+import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.provider.FriendAdapter;
 import in.incognitech.reminder.query.ContactsQuery;
 import in.incognitech.reminder.util.Utils;
 
 /**
- * Created y udit on 17/02/16.
+ * Created by udit on 17/02/16.
  */
-public class FriendsActivity extends DrawerActivity implements AdapterView.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class FriendsActivity extends DrawerActivity implements AdapterView.OnItemClickListener, SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private FriendAdapter friendAdapter;
     private ListView friendListView;
 
     private String searchTerm; // Stores the current search query term
 
-    // Whether or not the search query has changed since the last time the loader was refreshed
-    private boolean searchQueryChanged;
-
-    // Stores the previously selected search item so that on a configuration change the same item
-    // can be reselected again
-    private int mPreviouslySelectedSearchItem = 0;
+    private Cursor defaultCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,20 +46,22 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
 
         this.customSetup(R.layout.activity_friends, R.id.friend_toolbar, R.id.friend_nav_view);
 
-        friendAdapter = new FriendAdapter(this);
+        SQLiteDatabase db = new FriendDbHelper(this).getWritableDatabase();
+        String where = FriendDbHelper.authorID_COLUMN + " = ? AND " + FriendDbHelper.isActive_COLUMN + " = 'true'";
+        String whereArgs[] = {Utils.getCurrentUserID(this)};
+        String groupBy = null;
+        String having = null;
+        String order = null;
+        defaultCursor = db.query(FriendDbHelper.DATABASE_TABLE, null, where, whereArgs, groupBy, having, order);
+
+        friendAdapter = new FriendAdapter(this, defaultCursor);
 
         friendListView = (ListView) findViewById(R.id.list_view_friends);
         friendListView.setAdapter(friendAdapter);
         friendListView.setOnItemClickListener(this);
 
-        // If there's a previously selected search item from a saved state then don't bother
-        // initializing the loader as it will be restarted later when the query is populated into
-        // the action bar search view (see onQueryTextChange() in onCreateOptionsMenu()).
-        if (mPreviouslySelectedSearchItem == 0) {
-            // Initialize the loader, and create a loader identified by ContactsQuery.QUERY_ID
-            getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
-        }
-
+        // Initialize the loader, and create a loader identified by ContactsQuery.QUERY_ID
+//        getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
     }
 
     @Override
@@ -81,64 +82,45 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(this.getComponentName()));
 
-        // Set listeners for SearchView
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        ((EditText) searchView.findViewById(R.id.search_src_text)).addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String queryText) {
-                // Nothing needs to happen when the user submits the search string
-                return true;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                // Called when the action bar search text has changed.  Updates
-                // the search filter, and restarts the loader to do a new query
-                // using the new search string.
-                String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
-                // Don't do anything if the filter is empty
-                if (searchTerm == null && newFilter == null) {
-                    return true;
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() == 0) {
+                    onQueryTextChange(s.toString());
                 }
-
-                // Don't do anything if the new filter is the same as the current filter
-                if (searchTerm != null && searchTerm.equals(newFilter)) {
-                    return true;
-                }
-
-                // Updates current filter to new filter
-                searchTerm = newFilter;
-
-                // Restarts the loader. This triggers onCreateLoader(), which builds the
-                // necessary content Uri from mSearchTerm.
-                searchQueryChanged = true;
-                getSupportLoaderManager().restartLoader(ContactsQuery.QUERY_ID, null, FriendsActivity.this);
-                return true;
             }
         });
 
-        if (Utils.hasICS()) {
-            // This listener added in ICS
-            MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
-                @Override
-                public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                    // Nothing to do when the action item is expanded
-                    return true;
-                }
+        // Set listeners for SearchView
+        searchView.setOnQueryTextListener(this);
 
-                @Override
-                public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                    // When the user collapses the SearchView the current search string is
-                    // cleared and the loader restarted.
-                    if (!TextUtils.isEmpty(searchTerm)) {
-                        onSelectionCleared();
-                    }
-                    searchTerm = null;
-                    getSupportLoaderManager().restartLoader(ContactsQuery.QUERY_ID, null, FriendsActivity.this);
-                    return true;
+        MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                // Nothing to do when the action item is expanded
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                // When the user collapses the SearchView the current search string is
+                // cleared and the loader restarted.
+                if (!TextUtils.isEmpty(searchTerm)) {
+                    onSelectionCleared();
                 }
-            });
-        }
+                searchTerm = null;
+                friendAdapter.swapCursor(defaultCursor);
+                return true;
+            }
+        });
 
         if (searchTerm != null) {
             // If search term is already set here then this fragment is
@@ -149,17 +131,52 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
             // onQueryTextChange() when the menu item is expanded).
             final String savedSearchTerm = searchTerm;
 
-            // Expands the search menu item
-            if (Utils.hasICS()) {
-                searchItem.expandActionView();
-            }
+            searchItem.expandActionView();
 
             // Sets the SearchView to the previous search string
             searchView.setQuery(savedSearchTerm, false);
         }
 
+        return true;
+    }
 
+    @Override
+    public boolean onQueryTextSubmit(String queryText) {
+        // Nothing needs to happen when the user submits the search string
+        return true;
+    }
 
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        // Called when the action bar search text has changed.  Updates
+        // the search filter, and restarts the loader to do a new query
+        // using the new search string.
+
+        String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
+
+        if ( newFilter == null ) {
+            searchTerm = newFilter;
+            friendAdapter.swapCursor(defaultCursor);
+            return true;
+        }
+
+        // Don't do anything if the filter is empty
+        if (searchTerm == null && newFilter == null) {
+            friendAdapter.swapCursor(defaultCursor);
+            return true;
+        }
+
+        // Don't do anything if the new filter is the same as the current filter
+        if (searchTerm != null && searchTerm.equals(newFilter)) {
+            return true;
+        }
+
+        // Updates current filter to new filter
+        searchTerm = newFilter;
+
+        // Restarts the loader. This triggers onCreateLoader(), which builds the
+        // necessary content Uri from mSearchTerm.
+        getSupportLoaderManager().restartLoader(ContactsQuery.QUERY_ID, null, this);
         return true;
     }
 
@@ -175,31 +192,27 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         if (id == ContactsQuery.QUERY_ID) {
             Uri contentUri;
 
-            // There are two types of searches, one which displays all contacts and
-            // one which filters contacts by a search query. If searchTerm is set
-            // then a search query has been entered and the latter should be used.
+            contentUri = ContactsQuery.CONTENT_URI;
 
             if (searchTerm == null) {
-                // Since there's no search string, use the content URI that searches the entire
-                // Contacts table
-                contentUri = ContactsQuery.CONTENT_URI;
-            } else {
-                // Since there's a search string, use the special content Uri that searches the
-                // Contacts table. The URI consists of a base Uri and the search string.
-                contentUri =
-                        Uri.withAppendedPath(ContactsQuery.FILTER_URI, Uri.encode(searchTerm));
-            }
-
-            // Returns a new CursorLoader for querying the Contacts table. No arguments are used
-            // for the selection clause. The search string is either encoded onto the content URI,
-            // or no contacts search string is used. The other search criteria are constants. See
-            // the ContactsQuery interface.
-            return new CursorLoader(this,
+                return new CursorLoader(
+                    this,
                     contentUri,
                     ContactsQuery.PROJECTION,
                     ContactsQuery.SELECTION,
                     null,
-                    ContactsQuery.SORT_ORDER);
+                    ContactsQuery.SORT_ORDER
+                );
+            } else {
+                return new CursorLoader(
+                    this,
+                    contentUri,
+                    ContactsQuery.PROJECTION,
+                    ContactsQuery.FILTER_SELECTION,
+                    new String[] {"%" + searchTerm + "%"},
+                    ContactsQuery.SORT_ORDER
+                );
+            }
         }
 
         System.out.println("onCreateLoader - incorrect ID provided (" + id + ")");
@@ -262,14 +275,14 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         cursor.moveToPosition(position);
 
         // Creates a contact lookup Uri from contact ID and lookup_key
-        final Uri uri = ContactsContract.Contacts.getLookupUri(
-                cursor.getLong(ContactsQuery.ID),
-                cursor.getString(ContactsQuery.LOOKUP_KEY));
+//        final Uri uri = ContactsContract.Contacts.getLookupUri(
+//                cursor.getLong(ContactsQuery.ID),
+//                cursor.getString(ContactsQuery.LOOKUP_KEY));
 
         // Notifies the parent activity that the user selected a contact. In a two-pane layout, the
         // parent activity loads a ContactDetailFragment that displays the details for the selected
         // contact. In a single-pane layout, the parent activity starts a new activity that
         // displays contact details in its own Fragment.
-        this.onContactSelected(uri);
+//        this.onContactSelected(uri);
     }
 }
