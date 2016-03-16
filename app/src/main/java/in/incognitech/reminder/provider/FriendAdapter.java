@@ -40,6 +40,14 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
     private AlphabetIndexer mAlphabetIndexer; // Stores the AlphabetIndexer instance
     private TextAppearanceSpan highlightTextSpan; // Stores the highlight text appearance style
 
+    public final static int ACTION_TYPE = R.string.ACTION_TYPE;
+    public final static String ACTION_TYPE_INVITE = "invite";
+    public final static String ACTION_TYPE_REMINDER = "reminder";
+    public final static int ACTION_CONTEXT = R.string.ACTION_CONTEXT;
+    public final static String ACTION_CONTEXT_PHONE = "phone";
+    public final static String ACTION_CONTEXT_EMAIL = "email";
+    public final static int ACTION_DATA = R.string.ACTION_DATA;
+
     static class ViewHolder {
         ImageView image;
         TextView name;
@@ -137,12 +145,17 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
             String displayName = cursor.getString(ContactsQuery.DISPLAY_NAME);
 
             String mimeType = cursor.getString(ContactsQuery.MIMETYPE);
+            holder.detail.setTag(ACTION_TYPE, ACTION_TYPE_INVITE);
             if (mimeType.equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
                 String detail = cursor.getString(ContactsQuery.EMAIL);
                 holder.detail.setText(detail);
+                holder.detail.setTag(ACTION_CONTEXT, ACTION_CONTEXT_EMAIL);
+                holder.detail.setTag(ACTION_DATA, detail);
             } else if (mimeType.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
                 String detail = cursor.getString(ContactsQuery.EMAIL);
                 holder.detail.setText(detail);
+                holder.detail.setTag(ACTION_CONTEXT, ACTION_CONTEXT_PHONE);
+                holder.detail.setTag(ACTION_DATA, detail);
             }
 
             final int startIndex = indexOfSearchQuery(displayName);
@@ -180,12 +193,15 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
                 holder.image.setImageURI(Uri.parse(photoUri));
             }
         } else {
+            String userID = cursor.getString(cursor.getColumnIndex(FriendDbHelper.userID_COLUMN));
             String displayName = cursor.getString(cursor.getColumnIndex(FriendDbHelper.name_COLUMN));
             String email = cursor.getString(cursor.getColumnIndex(FriendDbHelper.email_COLUMN));
             String photoUrl = cursor.getString(cursor.getColumnIndex(FriendDbHelper.photoURL_COLUMN));
 
             holder.name.setText(displayName);
             holder.detail.setText(email);
+            holder.detail.setTag(ACTION_TYPE, ACTION_TYPE_REMINDER);
+            holder.detail.setTag(ACTION_DATA, userID);
             ((FriendsActivity)context).getImageFetcher().loadImage(photoUrl, holder.image);
         }
     }

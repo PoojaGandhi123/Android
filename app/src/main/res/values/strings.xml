@@ -23,4 +23,5 @@
     <string name="ACTION_TYPE">ACTION_TYPE</string>
     <string name="ACTION_CONTEXT">ACTION_CONTEXT</string>
     <string name="ACTION_DATA">ACTION_DATA</string>
+    <string name="FRIEND_ID">FRIEND_ID</string>
 </resources>

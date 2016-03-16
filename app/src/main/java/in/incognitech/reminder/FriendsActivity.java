@@ -1,12 +1,17 @@
 package in.incognitech.reminder;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.SearchManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -21,8 +26,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import in.incognitech.reminder.db.FriendDbHelper;
+import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.provider.FriendAdapter;
 import in.incognitech.reminder.query.ContactsQuery;
 import in.incognitech.reminder.util.Utils;
@@ -250,22 +258,6 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         return searchTerm;
     }
 
-
-
-    /**
-     * This interface callback lets the main contacts list fragment notify
-     * this activity that a contact has been selected.
-     *
-     * @param contactUri The contact Uri to the selected contact.
-     */
-    public void onContactSelected(Uri contactUri) {
-            // Otherwise single pane layout, start a new ContactDetailActivity with
-            // the contact Uri
-            Intent intent = new Intent(this, FriendDetailActivity.class);
-            intent.setData(contactUri);
-            startActivity(intent);
-    }
-
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Gets the Cursor object currently bound to the ListView
@@ -274,15 +266,71 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         // Moves to the Cursor row corresponding to the ListView item that was clicked
         cursor.moveToPosition(position);
 
-        // Creates a contact lookup Uri from contact ID and lookup_key
-//        final Uri uri = ContactsContract.Contacts.getLookupUri(
-//                cursor.getLong(ContactsQuery.ID),
-//                cursor.getString(ContactsQuery.LOOKUP_KEY));
+        TextView friendDetail = (TextView) view.findViewById(R.id.friend_detail);
+        String actionType = (String) friendDetail.getTag(FriendAdapter.ACTION_TYPE);
 
-        // Notifies the parent activity that the user selected a contact. In a two-pane layout, the
-        // parent activity loads a ContactDetailFragment that displays the details for the selected
-        // contact. In a single-pane layout, the parent activity starts a new activity that
-        // displays contact details in its own Fragment.
-//        this.onContactSelected(uri);
+        switch (actionType) {
+            case FriendAdapter.ACTION_TYPE_INVITE:
+                String actionContext = (String) friendDetail.getTag(FriendAdapter.ACTION_CONTEXT);
+                switch (actionContext) {
+                    case FriendAdapter.ACTION_CONTEXT_PHONE:
+                        String number = (String) friendDetail.getTag(FriendAdapter.ACTION_DATA);
+
+                        Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+                        sendIntent.putExtra("sms_body", "Hey! Install this App! It's awesome!!");
+                        sendIntent.putExtra("address", number);
+                        sendIntent.setData(Uri.parse("smsto:"+number));
+                        sendIntent.setType("vnd.android-dir/mms-sms");
+
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, 101);
+                            return;
+                        }
+
+                        startActivity(sendIntent);
+
+                        break;
+                    case FriendAdapter.ACTION_CONTEXT_EMAIL:
+                        String email = (String) friendDetail.getTag(FriendAdapter.ACTION_DATA);
+
+                        Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto",email, null));
+                        intent.putExtra(Intent.EXTRA_SUBJECT, "Reminder Invite !");
+                        intent.putExtra(Intent.EXTRA_TEXT, "Hey! Install this App! It's awesome!!");
+
+                        try {
+                            startActivity(intent);
+                        } catch(ActivityNotFoundException e) {
+                            Toast.makeText(this, "Error: No supported app found.", Toast.LENGTH_LONG).show();
+                        }
+                        break;
+                }
+                break;
+            case FriendAdapter.ACTION_TYPE_REMINDER:
+
+                String userID = (String) friendDetail.getTag(FriendAdapter.ACTION_DATA);
+                User user = FriendDbHelper.getFriend(this, userID);
+
+                if ( getCallingActivity() != null ) {
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("userID", userID);
+                    resultIntent.putExtra("userDisplayName", user.getName());
+                    setResult(Activity.RESULT_OK, resultIntent);
+                    finish();
+                } else {
+                    Intent intent = new Intent(this, AddReminderActivity.class);
+                    intent.putExtra("userID", userID);
+                    intent.putExtra("userDisplayName", user.getName());
+                    startActivity(intent);
+                }
+                finish();
+                break;
+        }
+
     }
 }

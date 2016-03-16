@@ -3,11 +3,13 @@ package in.incognitech.reminder;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Layout;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.DatePicker;
@@ -16,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,6 +40,10 @@ public class AddReminderActivity extends AppCompatActivity {
     final Calendar myCalender =Calendar.getInstance();
     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy    hh:mm aa");
     SimpleDateFormat stf = new SimpleDateFormat("hh:mm aa");
+
+    public final static int FRIEND_ID = R.string.FRIEND_ID;
+    private final static int REQUEST_CODE = 101;
+    TextView displayNameTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,19 +96,41 @@ public class AddReminderActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Reminder newReminder = new Reminder();
-                newReminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
-                newReminder.setDescription(description.getText().toString());
-                newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
-                newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
 
-                ReminderAdapter.addReminder(newReminder);
-                finish();
+                if ( displayNameTextView.getTag(FRIEND_ID) == null ) {
+                    redirectToHome();
+                } else {
+                    Reminder newReminder = new Reminder();
+                    newReminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
+                    newReminder.setDescription(description.getText().toString());
+                    newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
+                    newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
+                    newReminder.setFriend((String)displayNameTextView.getTag(FRIEND_ID));
+
+                    ReminderAdapter.addReminder(newReminder);
+                    finish();
+                }
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         this.setupIcons();
+
+        displayNameTextView = (TextView) findViewById(R.id.add_textView2);
+        displayNameTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(AddReminderActivity.this, FriendsActivity.class);
+                startActivityForResult(i, REQUEST_CODE);
+            }
+        });
+
+        Bundle extras = getIntent().getExtras();
+        if ( extras != null ) {
+            String userID = extras.getString("userID");
+            String userDisplayName = extras.getString("userDisplayName");
+            setFriendDetails(userID, userDisplayName);
+        }
     }
 
     private void setupIcons() {
@@ -119,6 +148,16 @@ public class AddReminderActivity extends AppCompatActivity {
         faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
         faIcon.setText(getResources().getText(R.string.fa_check));
         fab.setImageDrawable(faIcon);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if ( requestCode == REQUEST_CODE ) {
+            String userID = data.getStringExtra("userID");
+            String userDisplayName = data.getStringExtra("userDisplayName");
+            setFriendDetails(userID, userDisplayName);
+        }
     }
 
     @Override
@@ -162,5 +201,20 @@ public class AddReminderActivity extends AppCompatActivity {
         }
     };
 
+    private void redirectToHome() {
+        Toast.makeText(this, "No friend or self context passed. Please choose friend.", Toast.LENGTH_LONG).show();
+        Intent i = new Intent(this, OutgoingRemindersActivity.class);
+        startActivity(i);
+        finish();
+    }
+
+    private void setFriendDetails(String userID, String displayName) {
+        if ( TextUtils.isEmpty(userID) || TextUtils.isEmpty(displayName) ) {
+            redirectToHome();
+        } else {
+            displayNameTextView.setText(displayName);
+            displayNameTextView.setTag(FRIEND_ID, userID);
+        }
+    }
 
 }
