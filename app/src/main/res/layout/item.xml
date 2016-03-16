@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     cardUseCompatPadding="true"
     android:id="@+id/cv"
+    android:onClick="onClick"
     >
     <FrameLayout
         android:paddingLeft="20dp"

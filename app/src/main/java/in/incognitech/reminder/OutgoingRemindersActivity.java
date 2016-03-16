@@ -41,7 +41,7 @@ import in.incognitech.reminder.util.Utils;
 import in.incognitech.reminder.util.image.ImageCache;
 import in.incognitech.reminder.util.image.ImageFetcher;
 
-public class OutgoingRemindersActivity extends DrawerActivity {
+public class OutgoingRemindersActivity extends DrawerActivity implements View.OnClickListener {
 
     private Uri friendUri;
     private String friendID;
@@ -50,6 +50,7 @@ public class OutgoingRemindersActivity extends DrawerActivity {
     ArrayList<Reminder> reminds;
     ContentResolver resolver;
     private ImageFetcher mImageFetcher;
+    private String reminderID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +63,12 @@ public class OutgoingRemindersActivity extends DrawerActivity {
         resolver = this.getContentResolver();
         cursor = getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
+        String photoUrl = Utils.getCurrentUserPhotoUrl(this);
 
-
+        if ( ! photoUrl.equals("") ) {
+            ImageView imageView = (ImageView)findViewById(R.id.friend_avatar);
+            mImageFetcher.loadImage(photoUrl, imageView);
+        }
 
 
 
@@ -128,7 +133,14 @@ public class OutgoingRemindersActivity extends DrawerActivity {
     }
 
 
+    @Override
+    public void onClick(View v) {
+
+        Reminder newReminder = new Reminder();
+       newReminder.setAuthor(Utils.getCurrentUserID(OutgoingRemindersActivity.this));
+        ReminderAdapter.deleteReminder(newReminder);
 
 
 
+    }
 }

@@ -112,4 +112,6 @@ public class Utils {
         editor.putString(Constants.SHARED_PREFS_CUR_USER_PHOTO_URL, photoUrl);
         editor.commit();
     }
+
+
 }

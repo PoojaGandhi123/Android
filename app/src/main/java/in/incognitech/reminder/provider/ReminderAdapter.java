@@ -168,6 +168,10 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
         }
     }
 
+
+
+
+
     @Override
     public void onCancelled(FirebaseError firebaseError) {
 
@@ -199,6 +203,20 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
                 }
             }
         });
+    }
+
+
+
+
+
+    public static void deleteReminder(Reminder reminder) {
+        Map<String, Object> map = reminder.convertToMap();
+
+        Firebase fbReminderRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH).child(reminder.getAuthor());
+        fbReminderRef.removeValue();
+
+
+
     }
 
 }
