@@ -1,5 +1,6 @@
 package in.incognitech.reminder.model;
 
+import android.graphics.Bitmap;
 import android.location.Location;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +31,19 @@ public class Reminder {
     private Location location;
     private String locationType;
     private double locationRadius;
+    private Bitmap thumb;
+
+    public Bitmap getThumb() {
+        return thumb;
+    }
+
+    public void setThumb(Bitmap thumb) {
+        this.thumb = thumb;
+    }
+
+
+
+
 
     public Reminder() {
 

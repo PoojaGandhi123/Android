@@ -1,10 +1,19 @@
 package in.incognitech.reminder.provider;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.ContactsContract;
+import android.support.v7.widget.CardView;
+import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.firebase.client.ChildEventListener;
@@ -13,12 +22,20 @@ import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
 
+import org.w3c.dom.Text;
+
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 
+import in.incognitech.reminder.FriendsActivity;
 import in.incognitech.reminder.R;
 import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.model.Reminder;
+import in.incognitech.reminder.query.ContactsQuery;
 import in.incognitech.reminder.util.Constants;
+import in.incognitech.reminder.util.Utils;
 
 /**
  * Created by udit on 14/02/16.
@@ -27,16 +44,22 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
 
     public static int INCOMING = 0;
     public static int OUTGOING = 1;
+    private Context context;
+
+
 
     private int reminderType;
 
     static class ViewHolder {
+        ImageView image;
         TextView textView;
+        TextView reminderDate;
+        CardView cv;
     }
 
     public ReminderAdapter(Context context, int resource, String currentUserID) {
         super(context, resource);
-
+        this.context=context;
         this.reminderType = INCOMING;
 
         Firebase ref = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH);
@@ -65,9 +88,16 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
 
         if ( convertView == null ) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            row = inflater.inflate(R.layout.reminder_row, null);
+            row = inflater.inflate(R.layout.item, null);
             holder = new ViewHolder();
+            holder.cv=(CardView)row.findViewById(R.id.cv);
+
+            holder.cv.setCardBackgroundColor(R.color.colorYellow);
+            holder.cv.setRadius(5);
+            holder.image = (ImageView) row.findViewById(R.id.friend_avatar);
+            holder.reminderDate=(TextView)row.findViewById(R.id.reminder_date);
             holder.textView = (TextView) row.findViewById(R.id.reminder_desc);
+
             row.setTag(holder);
         } else {
             row = convertView;
@@ -75,10 +105,23 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
         }
 
         // Set the text
+
+        // For Android 3.0 and later, gets the thumbnail image Uri from the current Cursor row.
+        // For platforms earlier than 3.0, this isn't necessary, because the thumbnail is
+        // generated from the other fields in the row.
+
+
         holder.textView.setText(reminder.getDescription());
+        holder.reminderDate.setText(reminder.getReminderDate());
 
         return row;
     }
+
+
+
+
+
+
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
