@@ -6,8 +6,6 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -30,7 +28,7 @@ import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.TextDrawable;
 import in.incognitech.reminder.util.Utils;
 
-public class AddReminderActivity extends AppCompatActivity {
+public class AddReminderActivity extends DrawerActivity {
 
     TextView date1;
     EditText description;
@@ -47,10 +45,10 @@ public class AddReminderActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_reminder);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        this.customSetup(R.layout.activity_add_reminder, R.id.add_reminder_toolbar, R.id.add_reminder_nav_view);
 
         date1 = (TextView) findViewById(R.id.add_textView4);
         description =(EditText) findViewById(R.id.editText);
@@ -112,7 +110,6 @@ public class AddReminderActivity extends AppCompatActivity {
                 }
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         this.setupIcons();
 

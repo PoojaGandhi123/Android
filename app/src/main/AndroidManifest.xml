@@ -37,11 +37,7 @@
         <activity
             android:name=".AddReminderActivity"
             android:label="@string/title_activity_add_reminder"
-            android:parentActivityName=".OutgoingRemindersActivity"
             android:theme="@style/AppTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".OutgoingRemindersActivity" />
         </activity>
 
         <service android:name=".service.ContactsProcessor"
