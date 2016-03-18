@@ -144,6 +144,8 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
             // For platforms earlier than 3.0, this isn't necessary, because the thumbnail is
             // generated from the other fields in the row.
             String photoUri = cursor.getString(ContactsQuery.PHOTO_URI);
+            String contactID = cursor.getString(ContactsQuery.CONTACT_ID);
+            String contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactID).toString();
 
             String displayName = cursor.getString(ContactsQuery.DISPLAY_NAME);
 
@@ -184,18 +186,12 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
                 holder.name.setText(highlightedName);
             }
 
-            // Processes the QuickContactBadge. A QuickContactBadge first appears as a contact's
-            // thumbnail image with styling that indicates it can be touched for additional
-            // information. When the user clicks the image, the badge expands into a dialog box
-            // containing the contact's details and icons for the built-in apps that can handle
-            // each detail type.
-
-            if (photoUri != null) {
+            if (contactUri != null) {
                 // load Image
                 ImageLoader imageLoader = ImageLoader.getInstance();
                 float f = context.getResources().getDisplayMetrics().density;
                 ImageSize targetSize = new ImageSize((int)(45*f), (int)(45*f));
-                imageLoader.displayImage(photoUri, holder.image, targetSize);
+                imageLoader.displayImage(contactUri, holder.image, targetSize);
             }
         } else {
             String userID = cursor.getString(cursor.getColumnIndex(FriendDbHelper.userID_COLUMN));
