@@ -1,10 +1,12 @@
 package in.incognitech.reminder.card;
 
 import android.content.Context;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
@@ -22,6 +24,7 @@ import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.util.Constants;
 import it.gmariotti.cardslib.library.internal.Card;
 import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.internal.base.BaseCard;
 import it.gmariotti.cardslib.library.view.component.CardHeaderView;
 
 /**
@@ -56,6 +59,21 @@ public class ReminderCard extends Card {
                 CardHeader header = new CardHeader(mContext);
                 header.setTitle(reminder.getDescription());
                 header.setButtonExpandVisible(true);
+
+                header.setPopupMenu(R.menu.card_reminder_menu, new CardHeader.OnClickCardHeaderPopupMenuListener() {
+                    @Override
+                    public void onMenuItemClick(BaseCard card, MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.reminder_nav_edit:
+                                Toast.makeText(mContext, "Click on " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                                break;
+                            case R.id.reminder_nav_delete:
+                                Toast.makeText(mContext, "Click on " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                    }
+                });
+
                 headerView.addCardHeader(header);
             }
 
