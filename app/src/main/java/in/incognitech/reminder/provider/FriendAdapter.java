@@ -19,6 +19,9 @@ import android.widget.ImageView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
+
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -189,8 +192,10 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
 
             if (photoUri != null) {
                 // load Image
-                //            Bitmap image = loadContactPhotoThumbnail(photoUri);
-                holder.image.setImageURI(Uri.parse(photoUri));
+                ImageLoader imageLoader = ImageLoader.getInstance();
+                float f = context.getResources().getDisplayMetrics().density;
+                ImageSize targetSize = new ImageSize((int)(45*f), (int)(45*f));
+                imageLoader.displayImage(photoUri, holder.image, targetSize);
             }
         } else {
             String userID = cursor.getString(cursor.getColumnIndex(FriendDbHelper.userID_COLUMN));
@@ -202,7 +207,11 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
             holder.detail.setText(email);
             holder.detail.setTag(ACTION_TYPE, ACTION_TYPE_REMINDER);
             holder.detail.setTag(ACTION_DATA, userID);
-            ((FriendsActivity)context).getImageFetcher().loadImage(photoUrl, holder.image);
+
+            ImageLoader imageLoader = ImageLoader.getInstance();
+            float f = context.getResources().getDisplayMetrics().density;
+            ImageSize targetSize = new ImageSize((int)(45*f), (int)(45*f));
+            imageLoader.displayImage(photoUrl, holder.image, targetSize);
         }
     }
 

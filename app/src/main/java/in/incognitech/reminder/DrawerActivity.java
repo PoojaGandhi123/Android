@@ -25,15 +25,14 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 
 import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.provider.UserAdapter;
-import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.TextDrawable;
 import in.incognitech.reminder.util.Utils;
-import in.incognitech.reminder.util.image.ImageCache;
-import in.incognitech.reminder.util.image.ImageFetcher;
 
 /**
  * Created by udit on 16/02/16.
@@ -42,13 +41,7 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
     protected static GoogleApiClient mGoogleApiClient;
 
-    protected ImageFetcher imageFetcher;
-
     protected Firebase firebaseRef;
-
-    public ImageFetcher getImageFetcher() {
-        return imageFetcher;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +51,6 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         firebaseRef = FirebaseAPI.getInstance();
 
         setupGoogleSignIn();
-
-        setupImageCache();
     }
 
     protected void customSetup(int layoutID, int toolBarID, int navViewID) {
@@ -95,7 +86,9 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
 
         if ( ! photoUrl.equals("") ) {
             ImageView imageView = (ImageView) headerView.findViewById(R.id.userAvatar);
-            imageFetcher.loadImage(photoUrl, imageView);
+            ImageLoader imageLoader = ImageLoader.getInstance();
+            ImageSize targetSize = new ImageSize((int)getResources().getDimension(R.dimen.user_avatar_width), (int)getResources().getDimension(R.dimen.user_avatar_height));
+            imageLoader.displayImage(photoUrl, imageView, targetSize);
         }
     }
 
@@ -116,15 +109,6 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         // [END build_client]
-    }
-
-    private void setupImageCache() {
-        ImageCache.ImageCacheParams cacheParams =
-                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
-
-        imageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.user_avatar_width), (int) getResources().getDimension(R.dimen.user_avatar_height));
-        imageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
     }
 
     protected void setDrawerMenuIcons(Menu menu) {

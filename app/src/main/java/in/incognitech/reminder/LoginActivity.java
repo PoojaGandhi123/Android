@@ -24,6 +24,8 @@ import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 
 import java.util.Map;
 
@@ -33,11 +35,8 @@ import in.incognitech.reminder.provider.StockImageFetcher;
 import in.incognitech.reminder.provider.UserAdapter;
 import in.incognitech.reminder.service.ContactsProcessor;
 import in.incognitech.reminder.util.ActivityImageFetcherBridge;
-import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.HashGenerator;
 import in.incognitech.reminder.util.Utils;
-import in.incognitech.reminder.util.image.ImageCache;
-import in.incognitech.reminder.util.image.ImageFetcher;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ActivityImageFetcherBridge {
 
@@ -47,16 +46,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
 
-    private ImageFetcher imageFetcher;
-
     private Firebase firebaseRef;
 
     private boolean imageDone = false;
     private boolean loginDone = false;
-
-    public ImageFetcher getImageFetcher() {
-        return imageFetcher;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +57,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         setContentView(R.layout.activity_login);
 
         setupGoogleSignIn();
-
-        setupImageCache();
 
         FirebaseAPI.setAndroidContext(this);
         firebaseRef = FirebaseAPI.getInstance();
@@ -93,15 +84,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     public void setImageDone(boolean imageDone) {
         this.imageDone = imageDone;
-    }
-
-    private void setupImageCache() {
-        ImageCache.ImageCacheParams cacheParams =
-                new ImageCache.ImageCacheParams(this, Constants.IMAGE_CACHE_DIR);
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
-
-        imageFetcher = new ImageFetcher(this, (int) getResources().getDimension(R.dimen.login_background_width), (int) getResources().getDimension(R.dimen.login_background_height));
-        imageFetcher.addImageCache(getSupportFragmentManager(), cacheParams);
     }
 
     private void setupGoogleSignIn() {
@@ -306,7 +288,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @Override
     public void loadImage(String imageUri) {
         ImageView imageView = (ImageView) findViewById(R.id.login_background);
-        imageFetcher.loadImage(imageUri, imageView);
+        ImageLoader imageLoader = ImageLoader.getInstance();
+        float f = getResources().getDisplayMetrics().density;
+        ImageSize targetSize = new ImageSize((int)(640*f), (int)(640*f));
+        imageLoader.displayImage(imageUri, imageView, targetSize);
         hideProgressDialog();
         if(isLoginDone()) {
             hideProgressDialog();

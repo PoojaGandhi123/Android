@@ -49,4 +49,5 @@ dependencies {
     compile 'com.github.gabrielemariotti.cards:cardslib-core:2.1.0'
     compile 'com.github.gabrielemariotti.cards:cardslib-cards:2.1.0'
     compile 'com.github.gabrielemariotti.cards:cardslib-recyclerview:2.1.0'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 }
