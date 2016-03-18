@@ -7,13 +7,12 @@ package in.incognitech.reminder;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 
 import in.incognitech.reminder.provider.ReminderAdapter;
 import in.incognitech.reminder.util.Utils;
+import it.gmariotti.cardslib.library.recyclerview.view.CardRecyclerView;
 
 public class OutgoingRemindersActivity extends DrawerActivity {
 
@@ -24,15 +23,10 @@ public class OutgoingRemindersActivity extends DrawerActivity {
 
         this.customSetup(R.layout.activity_drawer, R.id.reminder_toolbar, R.id.reminder_nav_view);
 
-        ListView listView = new ListView(this);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        listView.setLayoutParams(params);
-
-        listView.setAdapter(new ReminderAdapter(this, R.layout.reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
-
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.content_drawer_container);
-        layout.addView(listView);
+        CardRecyclerView recyclerView = (CardRecyclerView) findViewById(R.id.reminder_list);
+        recyclerView.setHasFixedSize(false);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new ReminderAdapter(this, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

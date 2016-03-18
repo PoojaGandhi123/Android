@@ -7,17 +7,12 @@ package in.incognitech.reminder;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 
-import java.util.Date;
-
-import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.provider.ReminderAdapter;
-import in.incognitech.reminder.util.DateUtils;
 import in.incognitech.reminder.util.Utils;
+import it.gmariotti.cardslib.library.recyclerview.view.CardRecyclerView;
 
 public class IncomingRemindersActivity extends DrawerActivity {
 
@@ -28,15 +23,10 @@ public class IncomingRemindersActivity extends DrawerActivity {
 
         this.customSetup(R.layout.activity_drawer, R.id.reminder_toolbar, R.id.reminder_nav_view);
 
-        ListView listView = new ListView(this);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        listView.setLayoutParams(params);
-
-        listView.setAdapter(new ReminderAdapter(this, R.layout.reminder_row, Utils.getCurrentUserID(this), ReminderAdapter.INCOMING));
-
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.content_drawer_container);
-        layout.addView(listView);
+        CardRecyclerView recyclerView = (CardRecyclerView) findViewById(R.id.reminder_list);
+        recyclerView.setHasFixedSize(false);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new ReminderAdapter(this, Utils.getCurrentUserID(this), ReminderAdapter.INCOMING));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -52,22 +42,6 @@ public class IncomingRemindersActivity extends DrawerActivity {
                 startActivity(addReminderIntent);
             }
         });
-    }
-
-    private void testingOutLoud() {
-
-        Date date = new Date();
-        String curDate = DateUtils.toString(date);
-        String gmtDate = DateUtils.toGMT(date);
-
-        Reminder test = new Reminder();
-        test.setAuthor(Utils.getCurrentUserID(this));
-        test.setDescription("testing out loud");
-        test.setFriend(Utils.getCurrentUserID(this));
-        test.setReminderDate(curDate);
-        test.setReminderDateGMT(gmtDate);
-
-        ReminderAdapter.addReminder(test);
     }
 
 }

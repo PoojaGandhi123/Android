@@ -55,8 +55,8 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         this.customSetup(R.layout.activity_friends, R.id.friend_toolbar, R.id.friend_nav_view);
 
         SQLiteDatabase db = new FriendDbHelper(this).getWritableDatabase();
-        String where = FriendDbHelper.authorID_COLUMN + " = ? AND " + FriendDbHelper.isActive_COLUMN + " = 'true'";
-        String whereArgs[] = {Utils.getCurrentUserID(this)};
+        String where = FriendDbHelper.authorID_COLUMN + " = ? AND " + FriendDbHelper.isActive_COLUMN + " = 'true' AND " + FriendDbHelper.userID_COLUMN + "!= ?";
+        String whereArgs[] = {Utils.getCurrentUserID(this), Utils.getCurrentUserID(this)};
         String groupBy = null;
         String having = null;
         String order = null;
@@ -67,9 +67,6 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         friendListView = (ListView) findViewById(R.id.list_view_friends);
         friendListView.setAdapter(friendAdapter);
         friendListView.setOnItemClickListener(this);
-
-        // Initialize the loader, and create a loader identified by ContactsQuery.QUERY_ID
-//        getSupportLoaderManager().initLoader(ContactsQuery.QUERY_ID, null, this);
     }
 
     @Override
