@@ -4,8 +4,11 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.IBinder;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -72,6 +75,13 @@ public class ContactsProcessor extends IntentService implements ValueEventListen
                     }
                 } while (contacts.moveToNext());
             }
+
+            String context = intent.getStringExtra("context");
+            if ( context != null && context.equals("settings") ) {
+                triggetToast("All contacts have been synced.");
+            } else {
+                Utils.setProcessedContacts(this, true);
+            }
         }
     }
 
@@ -80,7 +90,7 @@ public class ContactsProcessor extends IntentService implements ValueEventListen
         for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
             User user = postSnapshot.getValue(User.class);
             // skip null & skip current user.
-            if ( user!=null && !user.getEmail().equals( Utils.getCurrentUserEmail(this) ) ) {
+            if ( user!=null ) {
                 FriendDbHelper.addFriend(this, user);
             }
             break;
@@ -90,5 +100,14 @@ public class ContactsProcessor extends IntentService implements ValueEventListen
     @Override
     public void onCancelled(FirebaseError firebaseError) {
 
+    }
+
+    private void triggetToast(final String message) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

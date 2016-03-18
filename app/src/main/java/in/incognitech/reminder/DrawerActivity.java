@@ -153,6 +153,13 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
         faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
         faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
+        faIcon.setText(getResources().getText(R.string.fa_cogs));
+        menu.findItem(R.id.nav_settings).setIcon(faIcon);
+
+        faIcon = new TextDrawable(this);
+        faIcon.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        faIcon.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        faIcon.setTypeface(FontAwesomeManager.getTypeface(this, FontAwesomeManager.FONTAWESOME));
         faIcon.setText(getResources().getText(R.string.fa_sign_out));
         menu.findItem(R.id.nav_logout).setIcon(faIcon);
 
@@ -191,6 +198,11 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
             case R.id.nav_friends:
                 if ( this.getClass() != FriendsActivity.class ) {
                     startActivity(new Intent(this, FriendsActivity.class));
+                }
+                break;
+            case R.id.nav_settings:
+                if ( this.getClass() != SettingsActivity.class ) {
+                    startActivity(new Intent(this, SettingsActivity.class));
                 }
                 break;
             case R.id.nav_logout:

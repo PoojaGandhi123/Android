@@ -10,4 +10,5 @@
     <string name="fa_plus">&#xf067;</string>
     <string name="fa_check_square_o">&#xf046;</string>
     <string name="fa_share_square_o">&#xf045;</string>
+    <string name="fa_cogs">&#xf085;</string>
 </resources>
