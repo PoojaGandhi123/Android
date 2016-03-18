@@ -19,7 +19,7 @@
         android:layout_height="match_parent"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        card:list_card_layout_resourceID="@layout/native_recyclerview_card_layout"
+        card:list_card_layout_resourceID="@layout/list_card_layout"
         android:id="@+id/reminder_list"/>
 
 </RelativeLayout>

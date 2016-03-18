@@ -11,13 +11,15 @@ import com.firebase.client.Query;
 import java.util.ArrayList;
 import java.util.Map;
 
+import in.incognitech.reminder.R;
 import in.incognitech.reminder.api.FirebaseAPI;
+import in.incognitech.reminder.card.ReminderCard;
 import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.util.Constants;
 import it.gmariotti.cardslib.library.internal.Card;
-import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.internal.CardExpand;
 import it.gmariotti.cardslib.library.recyclerview.internal.CardArrayRecyclerViewAdapter;
 
 /**
@@ -111,10 +113,19 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
 
         User friend = FriendDbHelper.getFriend(mContext, reminder.getFriend());
 
-        Card card = new Card(mContext);
-        CardHeader cardHeader = new CardHeader(mContext);
-        cardHeader.setTitle(reminder.getDescription());
-        card.addCardHeader(cardHeader);
+        ReminderCard card = new ReminderCard(mContext, R.layout.card);
+        card.setReminder(reminder);
+        card.setFriend(friend);
+
+//        ReminderCardExpand expand = new ReminderCardExpand(mContext, R.layout.card_expand);
+//        expand.setReminder(reminder);
+
+        CardExpand expand = new CardExpand(mContext);
+        expand.setTitle("YOYO");
+        card.addCardExpand(expand);
+
+        card.setSwipeable(true);
+
         return card;
     }
 
