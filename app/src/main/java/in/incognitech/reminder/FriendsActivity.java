@@ -23,11 +23,14 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.model.User;
@@ -67,6 +70,22 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
         friendListView = (ListView) findViewById(R.id.list_view_friends);
         friendListView.setAdapter(friendAdapter);
         friendListView.setOnItemClickListener(this);
+        friendListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                ImageLoader imageLoader = ImageLoader.getInstance();
+                // Pause image loader to ensure smoother scrolling when flinging
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+                    imageLoader.pause();
+                } else {
+                    imageLoader.resume();
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+            }
+        });
     }
 
     @Override
