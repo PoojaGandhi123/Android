@@ -250,7 +250,7 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // This swaps the new cursor into the adapter.
-        if (loader.getId() == ContactsQuery.QUERY_ID) {
+        if (loader.getId() == ContactsQuery.QUERY_ID && searchTerm != null) {
             friendAdapter.swapCursor(data);
         }
     }
