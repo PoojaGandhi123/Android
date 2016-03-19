@@ -30,6 +30,7 @@ import java.util.Locale;
 import in.incognitech.reminder.FriendsActivity;
 import in.incognitech.reminder.R;
 import in.incognitech.reminder.db.FriendDbHelper;
+import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.query.ContactsQuery;
 import in.incognitech.reminder.util.Utils;
 
@@ -153,9 +154,24 @@ public class FriendAdapter extends CursorAdapter implements SectionIndexer {
             holder.detail.setTag(ACTION_TYPE, ACTION_TYPE_INVITE);
             if (mimeType.equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
                 String detail = cursor.getString(ContactsQuery.EMAIL);
-                holder.detail.setText(detail);
-                holder.detail.setTag(ACTION_CONTEXT, ACTION_CONTEXT_EMAIL);
-                holder.detail.setTag(ACTION_DATA, detail);
+
+                User user = FriendDbHelper.getFriendByEmail(context, detail);
+
+                if ( user != null ) {
+                    holder.name.setText(user.getName());
+                    holder.detail.setText(user.getEmail());
+                    holder.detail.setTag(ACTION_TYPE, ACTION_TYPE_REMINDER);
+                    holder.detail.setTag(ACTION_DATA, user.getId());
+
+                    ImageLoader imageLoader = ImageLoader.getInstance();
+                    float f = context.getResources().getDisplayMetrics().density;
+                    ImageSize targetSize = new ImageSize((int)(45*f), (int)(45*f));
+                    imageLoader.displayImage(user.getPhotoUrl(), holder.image, targetSize);
+                } else {
+                    holder.detail.setText(detail);
+                    holder.detail.setTag(ACTION_CONTEXT, ACTION_CONTEXT_EMAIL);
+                    holder.detail.setTag(ACTION_DATA, detail);
+                }
             } else if (mimeType.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
                 String detail = cursor.getString(ContactsQuery.EMAIL);
                 holder.detail.setText(detail);

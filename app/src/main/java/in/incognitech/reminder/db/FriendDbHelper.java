@@ -55,6 +55,36 @@ public class FriendDbHelper extends SQLiteOpenHelper {
         }
     }
 
+    public static User getFriendByEmail(Context context, String email) {
+        String where = authorID_COLUMN + " = ? AND " + email_COLUMN + " = ?";
+        String whereArgs[] = {Utils.getCurrentUserID(context), email};
+        String groupBy = null;
+        String having = null;
+        String order = null;
+
+        SQLiteDatabase db = new FriendDbHelper(context).getWritableDatabase();
+        Cursor cursor = db.query(DATABASE_TABLE, null, where, whereArgs, groupBy, having, order);
+
+        User user = null;
+
+        if(cursor.moveToFirst()) {
+            String isActive = cursor.getString(cursor.getColumnIndex(isActive_COLUMN));
+            String photoUrl = cursor.getString(cursor.getColumnIndex(photoURL_COLUMN));
+            String name = cursor.getString(cursor.getColumnIndex(name_COLUMN));
+            String e = cursor.getString(cursor.getColumnIndex(email_COLUMN));
+            String id = cursor.getString(cursor.getColumnIndex(userID_COLUMN));
+
+            user = new User();
+            user.setIsActive(isActive.equals("true") ? true : false);
+            user.setPhotoUrl(photoUrl);
+            user.setName(name);
+            user.setEmail(e);
+            user.setId(id);
+        }
+        db.close();
+        return user;
+    }
+
     public static User getFriend(Context context, String userID) {
         String where = authorID_COLUMN + " = ? AND " + userID_COLUMN + " = ?";
         String whereArgs[] = {Utils.getCurrentUserID(context), userID};
