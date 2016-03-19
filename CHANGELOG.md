@@ -1,6 +1,43 @@
 CHANGELOG
 =========
 
+- fe53b29 Fixes #57 - update reminder time for outgoing reminder
+- 7c6331a Fixes self label for incoming reminders
+- 327dc16 fixes #59 - Show reminder time in user's timezone
+- ac4d62c fixes Activity stack issue
+- 0e5eee3 fixes card flickering on swipe/undo & expand/collapse
+- 37571c2 fixes redirection after add reminder
+- 2013423 fixes app crash on consecutive user input for friend search
+- 54105c6 Prevent activities if user is not loggedin
+- 5ea3cfa Redirect to Add Reminder activity if user is registerd
+- f451a4b finish the calling activities before starting new ones
+- 4d7e467 removes extra code
+- 5313dab adds Expand card, Swipe Card & popup menu
+- 8934512 Adds Card menu in the list
+- 84ff970 adds CardView for Reminders List
+- 1d44844 Fixes Contact Image url for ImageLoader Lib
+- d1143c8 pause image loading no scroll
+- 3cabe9b replaces ImageLoader lib
+- 658c2bf adds CardView for Reminder list
+- 520ba76 removes extra files
+- 5c8fbd8 adds Sync Contacts settings
+- 9b801a1 manifest file changes
+- 7c04926 updates readme & removes screenshots
+- 926db50 removes parent activity & extends from Drawer Activity
+- b4d2ff5 removes friend detail activity
+- a468ab4 connects Outgoing Reminders with Friend selection activity & removes debug code
+- f0a3603 Changes label on Add Reminder activity
+- ccbf383 Fixes #52 - Pass friend ID to AddReminder methods for Firebase
+- 4b77db9 Fixes #53 - Reminder for Self - Show "self" along with user display name, Fixes #54 - Reminder for self - pass authorID instead of friendID to AddReminder method for Firebase
+- 282c333 Fixes NPE when pressing back without selecting friend
+- 0b6c491 Fixes #52 - Pass friend ID to AddReminder methods for Firebase
+- cb33b65 fixes date format for 24 hours
+- b9326a3 skips current user in Sync process
+- 35f9229 changes Friends List Activity logic and layouts.
+- 1605165 adds Contacts Sync Process service
+- 6f62560 adds processContacts flag for shared prefs
+- d39e2d8 updates changelog.md
+- 969ddc2 updates changelog.md
 - 20b3683 show active users in #9
 - 99b8d20 fixes NPE for Photo URI
 - f13e0bd improves login logic to update user details
