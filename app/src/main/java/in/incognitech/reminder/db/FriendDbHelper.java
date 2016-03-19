@@ -122,7 +122,7 @@ public class FriendDbHelper extends SQLiteOpenHelper {
         newValues.put(userID_COLUMN, user.getId());
         newValues.put(email_COLUMN, user.getEmail());
         newValues.put(name_COLUMN, user.getName());
-        newValues.put(photoURL_COLUMN, user.getPhotoUrl());
+        newValues.put(photoURL_COLUMN, user.getPhotoUrl() != null ? user.getPhotoUrl() : Utils.getGravatar(user.getEmail()));
         newValues.put(isActive_COLUMN, user.isActive() ? "true" : "false");
 
         SQLiteDatabase db = new FriendDbHelper(context).getWritableDatabase();
