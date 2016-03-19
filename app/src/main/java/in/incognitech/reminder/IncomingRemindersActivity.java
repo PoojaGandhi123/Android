@@ -41,6 +41,7 @@ public class IncomingRemindersActivity extends DrawerActivity {
                 addReminderIntent.putExtra("userID", userID);
                 addReminderIntent.putExtra("userDisplayName", displayName + " (Self)" );
                 startActivity(addReminderIntent);
+                finish();
             }
         });
     }

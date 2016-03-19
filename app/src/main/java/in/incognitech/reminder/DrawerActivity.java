@@ -172,21 +172,25 @@ public class DrawerActivity extends AppCompatActivity implements NavigationView.
             case R.id.nav_outgoing_reminders:
                 if ( this.getClass() != OutgoingRemindersActivity.class ) {
                     startActivity(new Intent(this, OutgoingRemindersActivity.class));
+                    finish();
                 }
                 break;
             case R.id.nav_incoming_reminders:
                 if ( this.getClass() != IncomingRemindersActivity.class ) {
                     startActivity(new Intent(this, IncomingRemindersActivity.class));
+                    finish();
                 }
                 break;
             case R.id.nav_friends:
                 if ( this.getClass() != FriendsActivity.class ) {
                     startActivity(new Intent(this, FriendsActivity.class));
+                    finish();
                 }
                 break;
             case R.id.nav_settings:
                 if ( this.getClass() != SettingsActivity.class ) {
                     startActivity(new Intent(this, SettingsActivity.class));
+                    finish();
                 }
                 break;
             case R.id.nav_logout:
