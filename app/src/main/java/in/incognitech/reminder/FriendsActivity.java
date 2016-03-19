@@ -347,9 +347,7 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
                     intent.putExtra("userID", userID);
                     intent.putExtra("userDisplayName", user.getName());
                     startActivity(intent);
-                    finish();
                 }
-                finish();
                 break;
         }
 

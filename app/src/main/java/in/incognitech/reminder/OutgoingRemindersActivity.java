@@ -39,7 +39,6 @@ public class OutgoingRemindersActivity extends DrawerActivity {
             public void onClick(View view) {
                 Intent friendsIntent = new Intent(OutgoingRemindersActivity.this, FriendsActivity.class);
                 startActivity(friendsIntent);
-                finish();
             }
         });
     }
