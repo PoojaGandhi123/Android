@@ -107,9 +107,13 @@ public class AddReminderActivity extends DrawerActivity {
                     newReminder.setDescription(description.getText().toString());
                     newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
                     newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
-                    newReminder.setFriend((String)displayNameTextView.getTag(FRIEND_ID));
+                    newReminder.setFriend((String) displayNameTextView.getTag(FRIEND_ID));
 
                     ReminderAdapter.addReminder(newReminder);
+
+                    Intent i = new Intent(AddReminderActivity.this, OutgoingRemindersActivity.class);
+                    startActivity(i);
+
                     finish();
                 }
             }
