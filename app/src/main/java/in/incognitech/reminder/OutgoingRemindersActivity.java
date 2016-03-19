@@ -65,11 +65,10 @@ public class OutgoingRemindersActivity extends DrawerActivity implements View.On
 
         String photoUrl = Utils.getCurrentUserPhotoUrl(this);
 
-        if ( ! photoUrl.equals("") ) {
-            ImageView imageView = (ImageView)findViewById(R.id.friend_avatar);
+        if (!photoUrl.equals("")) {
+            ImageView imageView = (ImageView) findViewById(R.id.friend_avatar);
             mImageFetcher.loadImage(photoUrl, imageView);
         }
-
 
 
         ListView listView = new ListView(this);
@@ -81,8 +80,6 @@ public class OutgoingRemindersActivity extends DrawerActivity implements View.On
 
         RelativeLayout layout = (RelativeLayout) findViewById(R.id.content_drawer_container);
         layout.addView(listView);
-
-
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -105,18 +102,28 @@ public class OutgoingRemindersActivity extends DrawerActivity implements View.On
     }
 
 
+    @Override
+    public void onClick(View v) {
+
+        Reminder newReminder = new Reminder();
+        newReminder.setAuthor(Utils.getCurrentUserID(OutgoingRemindersActivity.this));
+        ReminderAdapter.deleteReminder(newReminder);
+
+
+    }
+
+public void UpdateReminder(View view)
+{
+    Reminder newReminder = new Reminder();
+    Intent intent = new Intent(this, AddReminderActivity.class);
+intent.putExtra("key",newReminder.getKey());
+    startActivity(intent);
+
+}
 
 
 
-
-
-
-
-
-
-
-
-        private void testingOutLoud() {
+    private void testingOutLoud() {
 
         Date date = new Date();
         String curDate = DateUtils.toString(date);
@@ -130,17 +137,5 @@ public class OutgoingRemindersActivity extends DrawerActivity implements View.On
         test.setReminderDateGMT(gmtDate);
 
         ReminderAdapter.addReminder(test);
-    }
-
-
-    @Override
-    public void onClick(View v) {
-
-        Reminder newReminder = new Reminder();
-       newReminder.setAuthor(Utils.getCurrentUserID(OutgoingRemindersActivity.this));
-        ReminderAdapter.deleteReminder(newReminder);
-
-
-
     }
 }

@@ -219,4 +219,17 @@ public class ReminderAdapter extends ArrayAdapter<Reminder> implements ChildEven
 
     }
 
+
+    public static void updateReminder(Reminder reminder)
+    {
+        Map<String, Object> map = reminder.convertToMap();
+
+        Firebase fbReminderRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH);
+        //map.put("dateChanged",reminder.getDate());
+
+        fbReminderRef.setValue(map);
+
+    }
+
+
 }

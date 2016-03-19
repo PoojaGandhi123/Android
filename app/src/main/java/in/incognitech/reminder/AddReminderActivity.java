@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -32,6 +33,7 @@ public class AddReminderActivity extends AppCompatActivity {
     TextView date1;
     EditText description;
     ImageView map;
+    Button edit;
     int year_x, month_x, day_x, hour_x, minute_x, ampm_x;
     static final int date_id =0, time_id=1;
     final Calendar myCalender =Calendar.getInstance();
@@ -47,6 +49,7 @@ public class AddReminderActivity extends AppCompatActivity {
 
         date1 = (TextView) findViewById(R.id.add_textView4);
         description =(EditText) findViewById(R.id.editText);
+        edit=(Button)findViewById(R.id.Update);
 
         year_x=myCalender.get(Calendar.YEAR);
         month_x=myCalender.get(Calendar.MONTH);
@@ -102,6 +105,9 @@ public class AddReminderActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         this.setupIcons();
+
+
+
     }
 
     private void setupIcons() {
@@ -162,5 +168,19 @@ public class AddReminderActivity extends AppCompatActivity {
         }
     };
 
+
+public void edit(View view)
+{
+    Reminder newReminder = new Reminder();
+    newReminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
+    //newReminder.setDescription(description.getText().toString());
+    newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
+    //newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
+
+    ReminderAdapter.updateReminder(newReminder);
+
+
+
+}
 
 }

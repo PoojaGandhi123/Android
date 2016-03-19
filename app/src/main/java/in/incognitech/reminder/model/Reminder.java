@@ -14,7 +14,7 @@ import in.incognitech.reminder.util.DateUtils;
 /**
  * Created by udit on 14/02/16.
  */
-public class Reminder {
+public class Reminder  {
 
     private String key;
     private String description;
