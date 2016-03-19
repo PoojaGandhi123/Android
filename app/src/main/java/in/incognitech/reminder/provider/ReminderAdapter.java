@@ -26,7 +26,10 @@ import it.gmariotti.cardslib.library.internal.ViewToClickToExpand;
 /**
  * Created by udit on 14/02/16.
  */
-public class ReminderAdapter extends CardArrayAdapter implements ChildEventListener, Card.OnSwipeListener, Card.OnUndoSwipeListListener, Card.OnUndoHideSwipeListListener {
+public class ReminderAdapter extends CardArrayAdapter
+        implements ChildEventListener,
+        Card.OnSwipeListener, Card.OnUndoSwipeListListener, Card.OnUndoHideSwipeListListener,
+        Card.OnExpandAnimatorEndListener, Card.OnCollapseAnimatorEndListener {
 
     public static int INCOMING = 0;
     public static int OUTGOING = 1;
@@ -122,6 +125,8 @@ public class ReminderAdapter extends CardArrayAdapter implements ChildEventListe
         card.setOnSwipeListener(this);
         card.setOnUndoSwipeListListener(this);
         card.setOnUndoHideSwipeListListener(this);
+        card.setOnExpandAnimatorEndListener(this);
+        card.setOnCollapseAnimatorEndListener(this);
 
         ReminderCardExpand expand = new ReminderCardExpand(mContext, R.layout.card_expand);
         expand.setReminder(reminder);
@@ -138,17 +143,30 @@ public class ReminderAdapter extends CardArrayAdapter implements ChildEventListe
     }
 
     @Override
+    public void onCollapseEnd(Card card) {
+        card.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onExpandEnd(Card card) {
+        card.notifyDataSetChanged();
+    }
+
+    @Override
     public void onSwipe(Card card) {
+        card.notifyDataSetChanged();
         notifyDataSetChanged();
     }
 
     @Override
     public void onUndoSwipe(Card card) {
+        card.notifyDataSetChanged();
         notifyDataSetChanged();
     }
 
     @Override
     public void onUndoHideSwipe(Card card) {
+        card.notifyDataSetChanged();
         removeReminder(card.getId());
     }
 
