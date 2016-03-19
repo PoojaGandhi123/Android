@@ -33,23 +33,25 @@ public class ReminderCardExpand extends CardExpand {
     @Override
     public void setupInnerViewElements(ViewGroup parent, View view) {
         if(view != null) {
-            TextView reminderDescView = (TextView) parent.findViewById(R.id.reminder_desc);
-            if (reminderDescView != null) {
-                reminderDescView.setText(reminder.getDescription());
-            }
 
-            TextView reminderTimestampView = (TextView) parent.findViewById(R.id.reminder_desc);
-            if (reminderTimestampView != null) {
+            TextView reminderTimestampView = (TextView) parent.findViewById(R.id.reminder_timestamp);
+            if ( reminderTimestampView != null ) {
                 reminderTimestampView.setText(reminder.getReminderDate());
             }
 
+            User author = FriendDbHelper.getFriend(mContext, reminder.getAuthor());
+
             ImageView authorGravatarView = (ImageView) parent.findViewById(R.id.reminder_author_gravatar);
             if ( authorGravatarView != null ) {
-                User author = FriendDbHelper.getFriend(mContext, reminder.getAuthor());
                 ImageLoader imageLoader = ImageLoader.getInstance();
                 float f = view.getResources().getDisplayMetrics().density;
                 ImageSize targetSize = new ImageSize((int)(45*f), (int)(45*f));
                 imageLoader.displayImage(author.getPhotoUrl(), authorGravatarView, targetSize);
+            }
+
+            TextView authorNameView = (TextView) parent.findViewById(R.id.reminder_author_name);
+            if ( authorNameView != null ) {
+                authorNameView.setText(author.getName());
             }
         }
     }

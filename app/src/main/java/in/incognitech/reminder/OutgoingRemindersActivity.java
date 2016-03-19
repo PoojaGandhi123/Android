@@ -7,12 +7,12 @@ package in.incognitech.reminder;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 
 import in.incognitech.reminder.provider.ReminderAdapter;
 import in.incognitech.reminder.util.Utils;
-import it.gmariotti.cardslib.library.recyclerview.view.CardRecyclerView;
+import it.gmariotti.cardslib.library.view.CardListView;
+import it.gmariotti.cardslib.library.view.listener.dismiss.DefaultDismissableManager;
 
 public class OutgoingRemindersActivity extends DrawerActivity {
 
@@ -23,10 +23,11 @@ public class OutgoingRemindersActivity extends DrawerActivity {
 
         this.customSetup(R.layout.activity_drawer, R.id.reminder_toolbar, R.id.reminder_nav_view);
 
-        CardRecyclerView recyclerView = (CardRecyclerView) findViewById(R.id.reminder_list);
-        recyclerView.setHasFixedSize(false);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new ReminderAdapter(this, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING));
+        CardListView cardListView = (CardListView) findViewById(R.id.reminder_list);
+        ReminderAdapter reminderAdapter = new ReminderAdapter(this, Utils.getCurrentUserID(this), ReminderAdapter.OUTGOING);
+        reminderAdapter.setDismissable(new DefaultDismissableManager());
+        reminderAdapter.setEnableUndo(true);
+        cardListView.setAdapter(reminderAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

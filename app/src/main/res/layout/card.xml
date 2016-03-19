@@ -51,6 +51,14 @@
 
         </LinearLayout>
 
+        <FrameLayout
+            android:id="@+id/card_content_expand_layout"
+            style="@style/card.main_contentExpand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </FrameLayout>
+
     </LinearLayout>
 
     <it.gmariotti.cardslib.library.view.component.CardShadowView
@@ -58,13 +66,5 @@
         android:id="@+id/card_shadow_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
-    <FrameLayout
-        android:id="@+id/card_content_expand_layout"
-        style="@style/card.main_contentExpand"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </FrameLayout>
 
 </LinearLayout>

@@ -14,18 +14,19 @@ import java.util.Map;
 import in.incognitech.reminder.R;
 import in.incognitech.reminder.api.FirebaseAPI;
 import in.incognitech.reminder.card.ReminderCard;
+import in.incognitech.reminder.card.ReminderCardExpand;
 import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.util.Constants;
 import it.gmariotti.cardslib.library.internal.Card;
-import it.gmariotti.cardslib.library.internal.CardExpand;
-import it.gmariotti.cardslib.library.recyclerview.internal.CardArrayRecyclerViewAdapter;
+import it.gmariotti.cardslib.library.internal.CardArrayAdapter;
+import it.gmariotti.cardslib.library.internal.ViewToClickToExpand;
 
 /**
  * Created by udit on 14/02/16.
  */
-public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements ChildEventListener {
+public class ReminderAdapter extends CardArrayAdapter implements ChildEventListener, Card.OnSwipeListener, Card.OnUndoSwipeListListener, Card.OnUndoHideSwipeListListener {
 
     public static int INCOMING = 0;
     public static int OUTGOING = 1;
@@ -40,7 +41,7 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
 
     public ReminderAdapter(Context context, String currentUserID, int reminderType) {
 
-        super(context, null);
+        super(context, new ArrayList<Card>());
 
         this.reminderType = reminderType;
 
@@ -68,8 +69,9 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
         reminder.setKey(dataSnapshot.getKey());
         int position = this.searchReminderByKey(dataSnapshot.getKey());
         if(position != -1) {
+            Card oldCard = this.getItem(position);
             this.reminders.remove(position);
-            this.remove(position);
+            this.remove(oldCard);
 
             this.reminders.add(reminder);
             this.add(this.createCard(reminder));
@@ -85,7 +87,6 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
         int position = this.searchReminderByKey(dataSnapshot.getKey());
         if(position != -1) {
             this.reminders.remove(position);
-            this.remove(position);
 
             this.notifyDataSetChanged();
         }
@@ -98,7 +99,6 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
         int position = this.searchReminderByKey(dataSnapshot.getKey());
         if(position != -1) {
             this.reminders.remove(position);
-            this.remove(position);
 
             this.notifyDataSetChanged();
         }
@@ -116,17 +116,40 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
         ReminderCard card = new ReminderCard(mContext, R.layout.card);
         card.setReminder(reminder);
         card.setFriend(friend);
-
-//        ReminderCardExpand expand = new ReminderCardExpand(mContext, R.layout.card_expand);
-//        expand.setReminder(reminder);
-
-        CardExpand expand = new CardExpand(mContext);
-        expand.setTitle("YOYO");
-        card.addCardExpand(expand);
-
+        card.setId(reminder.getKey());
         card.setSwipeable(true);
 
+        card.setOnSwipeListener(this);
+        card.setOnUndoSwipeListListener(this);
+        card.setOnUndoHideSwipeListListener(this);
+
+        ReminderCardExpand expand = new ReminderCardExpand(mContext, R.layout.card_expand);
+        expand.setReminder(reminder);
+        card.addCardExpand(expand);
+
+        //Add a viewToClickExpand to enable click on whole card
+        ViewToClickToExpand viewToClickToExpand =
+                ViewToClickToExpand.builder()
+                        .highlightView(false)
+                        .setupCardElement(ViewToClickToExpand.CardElementUI.CARD);
+        card.setViewToClickToExpand(viewToClickToExpand);
+
         return card;
+    }
+
+    @Override
+    public void onSwipe(Card card) {
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void onUndoSwipe(Card card) {
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void onUndoHideSwipe(Card card) {
+        removeReminder(card.getId());
     }
 
     private int searchReminderByKey(String key) {
@@ -139,6 +162,11 @@ public class ReminderAdapter extends CardArrayRecyclerViewAdapter implements Chi
             }
         }
         return position;
+    }
+
+    public static void removeReminder(String key) {
+        Firebase fbReminderRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH);
+        fbReminderRef.child(key).removeValue();
     }
 
     public static void addReminder(Reminder reminder) {

@@ -5,8 +5,4 @@
         android:title="Edit"
         android:id="@+id/reminder_nav_edit"/>
 
-    <item
-        android:title="Delete"
-        android:id="@+id/reminder_nav_delete" />
-
 </menu>

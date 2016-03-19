@@ -14,12 +14,27 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_drawer">
 
-    <it.gmariotti.cardslib.library.recyclerview.view.CardRecyclerView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        card:list_card_layout_resourceID="@layout/list_card_layout"
-        android:id="@+id/reminder_list"/>
+        android:layout_height="match_parent">
+        <it.gmariotti.cardslib.library.view.CardListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            card:list_card_layout_resourceID="@layout/list_card_layout"
+            android:id="@+id/reminder_list"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="50dp">
+            <include layout="@layout/list_card_undo_message" />
+        </RelativeLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

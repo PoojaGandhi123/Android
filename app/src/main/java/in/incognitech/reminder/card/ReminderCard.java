@@ -5,6 +5,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,7 +52,7 @@ public class ReminderCard extends Card {
                 ImageLoader imageLoader = ImageLoader.getInstance();
                 float f = view.getResources().getDisplayMetrics().density;
                 ImageSize targetSize = new ImageSize((int)(45*f), (int)(45*f));
-                imageLoader.displayImage(friend.getPhotoUrl(), friendGravatarView,targetSize);
+                imageLoader.displayImage(friend.getPhotoUrl(), friendGravatarView, targetSize);
             }
 
             CardHeaderView headerView = (CardHeaderView) parent.findViewById(R.id.card_header_layout);
@@ -67,14 +68,12 @@ public class ReminderCard extends Card {
                             case R.id.reminder_nav_edit:
                                 Toast.makeText(mContext, "Click on " + item.getTitle(), Toast.LENGTH_SHORT).show();
                                 break;
-                            case R.id.reminder_nav_delete:
-                                Toast.makeText(mContext, "Click on " + item.getTitle(), Toast.LENGTH_SHORT).show();
-                                break;
                         }
                     }
                 });
 
                 headerView.addCardHeader(header);
+                PopupMenu
             }
 
             TextView dateView = (TextView) parent.findViewById(R.id.reminder_date);
