@@ -46,6 +46,10 @@ public class AddReminderActivity extends DrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        if ( ! Utils.isUserLoggedIn(this) ) {
+            redirectToLogin();
+        }
+
         super.onCreate(savedInstanceState);
 
         this.customSetup(R.layout.activity_add_reminder, R.id.add_reminder_toolbar, R.id.add_reminder_nav_view);
@@ -218,6 +222,12 @@ public class AddReminderActivity extends DrawerActivity {
             displayNameTextView.setText(displayName);
             displayNameTextView.setTag(FRIEND_ID, userID);
         }
+    }
+
+    private void redirectToLogin() {
+        Intent loginIntent = new Intent(this, LoginActivity.class);
+        startActivity(loginIntent);
+        finish();
     }
 
 }

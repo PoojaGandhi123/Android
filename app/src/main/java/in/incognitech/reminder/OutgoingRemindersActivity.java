@@ -19,6 +19,10 @@ public class OutgoingRemindersActivity extends DrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        if ( ! Utils.isUserLoggedIn(this) ) {
+            redirectToLogin();
+        }
+
         super.onCreate(savedInstanceState);
 
         this.customSetup(R.layout.activity_drawer, R.id.reminder_toolbar, R.id.reminder_nav_view);
@@ -38,6 +42,12 @@ public class OutgoingRemindersActivity extends DrawerActivity {
                 finish();
             }
         });
+    }
+
+    private void redirectToLogin() {
+        Intent loginIntent = new Intent(this, LoginActivity.class);
+        startActivity(loginIntent);
+        finish();
     }
 
 }

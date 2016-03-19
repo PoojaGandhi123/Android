@@ -69,6 +69,14 @@ public class Utils {
         return processed;
     }
 
+    public static boolean isUserLoggedIn(Context context) {
+        if ( Utils.getCurrentUserID(context).equals("")
+            || Utils.getCurrentUserEmail(context).equals("") ) {
+            return false;
+        }
+        return true;
+    }
+
     public static String getCurrentUserID(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(Constants.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
         String uid = prefs.getString(Constants.SHARED_PREFS_CUR_USER_ID, "");

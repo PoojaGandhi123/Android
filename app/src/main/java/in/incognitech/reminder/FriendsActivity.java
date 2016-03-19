@@ -53,6 +53,10 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        if ( ! Utils.isUserLoggedIn(this) ) {
+            redirectToLogin();
+        }
+
         super.onCreate(savedInstanceState);
 
         this.customSetup(R.layout.activity_friends, R.id.friend_toolbar, R.id.friend_nav_view);
@@ -349,5 +353,11 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
                 break;
         }
 
+    }
+
+    private void redirectToLogin() {
+        Intent loginIntent = new Intent(this, LoginActivity.class);
+        startActivity(loginIntent);
+        finish();
     }
 }
