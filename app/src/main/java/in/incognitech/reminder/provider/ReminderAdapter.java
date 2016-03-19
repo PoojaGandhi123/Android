@@ -117,6 +117,7 @@ public class ReminderAdapter extends CardArrayAdapter
         User friend = FriendDbHelper.getFriend(mContext, reminder.getFriend());
 
         ReminderCard card = new ReminderCard(mContext, R.layout.card);
+        card.setId(reminder.getKey());
         card.setReminder(reminder);
         card.setFriend(friend);
         card.setId(reminder.getKey());
@@ -192,6 +193,26 @@ public class ReminderAdapter extends CardArrayAdapter
 
         Firebase fbReminderRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH);
         fbReminderRef.push().setValue(map, new Firebase.CompletionListener() {
+            @Override
+            public void onComplete(FirebaseError firebaseError, Firebase firebase) {
+                if (firebaseError != null) {
+                    System.out.println("Data could not be saved. " + firebaseError.getMessage());
+                } else {
+                    System.out.println("Data saved successfully.");
+                }
+            }
+        });
+    }
+
+    public static void updateReminder(Reminder reminder) {
+
+        String key = reminder.getKey();
+
+        reminder.setKey(null);
+        Map<String, Object> map = reminder.convertToMap();
+
+        Firebase fbReminderRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH).child(key);
+        fbReminderRef.setValue(map, new Firebase.CompletionListener() {
             @Override
             public void onComplete(FirebaseError firebaseError, Firebase firebase) {
                 if (firebaseError != null) {

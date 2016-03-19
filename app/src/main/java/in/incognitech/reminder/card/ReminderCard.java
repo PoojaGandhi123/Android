@@ -1,12 +1,12 @@
 package in.incognitech.reminder.card;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import in.incognitech.reminder.AddReminderActivity;
 import in.incognitech.reminder.R;
 import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.model.User;
@@ -66,7 +67,10 @@ public class ReminderCard extends Card {
                     public void onMenuItemClick(BaseCard card, MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.reminder_nav_edit:
-                                Toast.makeText(mContext, "Click on " + item.getTitle(), Toast.LENGTH_SHORT).show();
+
+                                Intent reminderIntent = new Intent(mContext, AddReminderActivity.class);
+                                reminderIntent.putExtra("reminderID", getId());
+                                getContext().startActivity(reminderIntent);
                                 break;
                         }
                     }

@@ -3,6 +3,7 @@ package in.incognitech.reminder;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -18,17 +19,29 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
+import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.model.Reminder;
+import in.incognitech.reminder.model.User;
 import in.incognitech.reminder.provider.ReminderAdapter;
+import in.incognitech.reminder.util.Constants;
 import in.incognitech.reminder.util.DateUtils;
 import in.incognitech.reminder.util.FontAwesomeManager;
 import in.incognitech.reminder.util.TextDrawable;
 import in.incognitech.reminder.util.Utils;
 
-public class AddReminderActivity extends DrawerActivity {
+public class AddReminderActivity extends DrawerActivity implements ValueEventListener {
 
     TextView date1;
     EditText description;
@@ -37,10 +50,16 @@ public class AddReminderActivity extends DrawerActivity {
     static final int date_id =0, time_id=1;
     final Calendar myCalender =Calendar.getInstance();
     SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy    hh:mm aa");
-    SimpleDateFormat stf = new SimpleDateFormat("hh:mm aa");
 
     public final static int FRIEND_ID = R.string.FRIEND_ID;
+    public final static int REMINDER_CONTEXT = R.string.REMINDER_CONTEXT;
+    public final static String REMINDER_CONTEXT_ADD = "add";
+    public final static String REMINDER_CONTEXT_EDIT = "edit";
     private final static int REQUEST_CODE = 101;
+    private FloatingActionButton fab;
+    private String userID;
+    private String userDisplayName;
+    private String reminderID;
     TextView displayNameTextView;
 
     @Override
@@ -49,6 +68,8 @@ public class AddReminderActivity extends DrawerActivity {
         if ( ! Utils.isUserLoggedIn(this) ) {
             redirectToLogin();
         }
+
+        sdf.setTimeZone(TimeZone.getDefault());
 
         super.onCreate(savedInstanceState);
 
@@ -94,22 +115,30 @@ public class AddReminderActivity extends DrawerActivity {
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if ( displayNameTextView.getTag(FRIEND_ID) == null ) {
-                    redirectToHome();
+                if ( userID == null ) {
+                    redirectToHome("No friend or self context passed. Please choose friend.");
                 } else {
+
+                    String reminderContext = (String) fab.getTag(REMINDER_CONTEXT);
+
                     Reminder newReminder = new Reminder();
                     newReminder.setAuthor(Utils.getCurrentUserID(AddReminderActivity.this));
                     newReminder.setDescription(description.getText().toString());
                     newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
                     newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
-                    newReminder.setFriend((String) displayNameTextView.getTag(FRIEND_ID));
+                    newReminder.setFriend(userID);
+                    newReminder.setKey(reminderID);
 
-                    ReminderAdapter.addReminder(newReminder);
+                    if(reminderContext == REMINDER_CONTEXT_ADD) {
+                        ReminderAdapter.addReminder(newReminder);
+                    } else if ( reminderContext == REMINDER_CONTEXT_EDIT ) {
+                        ReminderAdapter.updateReminder(newReminder);
+                    }
 
                     Intent i = new Intent(AddReminderActivity.this, OutgoingRemindersActivity.class);
                     startActivity(i);
@@ -118,6 +147,8 @@ public class AddReminderActivity extends DrawerActivity {
                 }
             }
         });
+
+        fab.setTag(REMINDER_CONTEXT, REMINDER_CONTEXT_ADD);
 
         this.setupIcons();
 
@@ -132,11 +163,20 @@ public class AddReminderActivity extends DrawerActivity {
 
         Bundle extras = getIntent().getExtras();
         if ( extras != null ) {
-            String userID = extras.getString("userID");
-            String userDisplayName = extras.getString("userDisplayName");
-            setFriendDetails(userID, userDisplayName);
+            userID = extras.getString("userID");
+            userDisplayName = extras.getString("userDisplayName");
+            reminderID = extras.getString("reminderID");
+
+            if ( ! TextUtils.isEmpty(userID) && ! TextUtils.isEmpty(userDisplayName) ) {
+                setFriendDetails();
+            } else if ( ! TextUtils.isEmpty(reminderID) ) {
+                setReminderDetails();
+            } else {
+                redirectToHome("There's no activity to edit. Please choose an activity.");
+            }
+
         } else {
-            redirectToHome();
+            redirectToHome("No friend or self context passed. Please choose friend.");
         }
     }
 
@@ -162,11 +202,11 @@ public class AddReminderActivity extends DrawerActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if ( requestCode == REQUEST_CODE ) {
             if ( data != null ) {
-                String userID = data.getStringExtra("userID");
-                String userDisplayName = data.getStringExtra("userDisplayName");
-                setFriendDetails(userID, userDisplayName);
+                userID = data.getStringExtra("userID");
+                userDisplayName = data.getStringExtra("userDisplayName");
+                setFriendDetails();
             } else {
-                redirectToHome();
+                redirectToHome("No friend or self context passed. Please choose friend.");
             }
         }
     }
@@ -212,20 +252,22 @@ public class AddReminderActivity extends DrawerActivity {
         }
     };
 
-    private void redirectToHome() {
-        Toast.makeText(this, "No friend or self context passed. Please choose friend.", Toast.LENGTH_LONG).show();
+    private void redirectToHome(String message) {
+        ComponentName name = getCallingActivity();
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         Intent i = new Intent(this, OutgoingRemindersActivity.class);
         startActivity(i);
         finish();
     }
 
-    private void setFriendDetails(String userID, String displayName) {
-        if ( TextUtils.isEmpty(userID) || TextUtils.isEmpty(displayName) ) {
-            redirectToHome();
-        } else {
-            displayNameTextView.setText(displayName);
-            displayNameTextView.setTag(FRIEND_ID, userID);
-        }
+    private void setFriendDetails() {
+        displayNameTextView.setText(userDisplayName);
+        displayNameTextView.setTag(FRIEND_ID, userID);
+    }
+
+    private void setReminderDetails() {
+        Firebase reminderRef = firebaseRef.child(Constants.FIREBASE_REMINDERS_PATH).child(reminderID);
+        reminderRef.addValueEventListener(this);
     }
 
     private void redirectToLogin() {
@@ -234,4 +276,45 @@ public class AddReminderActivity extends DrawerActivity {
         finish();
     }
 
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+        Reminder reminder = dataSnapshot.getValue(Reminder.class);
+        if ( reminder != null ) {
+            User friend = FriendDbHelper.getFriend(this, reminder.getFriend());
+
+            if ( friend != null ) {
+                userDisplayName = friend.getName() + (friend.getId().equals(Utils.getCurrentUserID(this)) ? " (Self)" : "");
+                userID = friend.getId();
+                setFriendDetails();
+            } else {
+                redirectToHome("Reminder data is corrupted. Please choose a valid reminder.");
+            }
+
+            DateFormat utcFormat = new SimpleDateFormat(Constants.DATE_FORMAT);
+            utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            try {
+                Date utcDate = utcFormat.parse(reminder.getReminderDateGMT());
+                String tzDateStr = sdf.format(utcDate);
+                Date tzDate = sdf.parse(tzDateStr);
+                myCalender.setTime(tzDate);
+                date1.setText(tzDateStr);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            description.setText(reminder.getDescription());
+
+            getSupportActionBar().setTitle(getString(R.string.title_activity_edit_reminder));
+
+            fab.setTag(REMINDER_CONTEXT, REMINDER_CONTEXT_EDIT);
+
+        } else {
+            redirectToHome("There's no activity to edit. Please choose an activity.");
+        }
+    }
+
+    @Override
+    public void onCancelled(FirebaseError firebaseError) {
+
+    }
 }

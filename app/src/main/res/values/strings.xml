@@ -12,6 +12,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="title_activity_add_reminder">Add Reminder</string>
+    <string name="title_activity_edit_reminder">Edit Reminder</string>
 
     <string name="label_sync_contacts">Sync Contacts</string>
     <string name="key_sync_contacts_settings">sync_contacts</string>
@@ -27,4 +28,5 @@
     <string name="ACTION_CONTEXT">ACTION_CONTEXT</string>
     <string name="ACTION_DATA">ACTION_DATA</string>
     <string name="FRIEND_ID">FRIEND_ID</string>
+    <string name="REMINDER_CONTEXT">REMINDER_CONTEXT</string>
 </resources>
