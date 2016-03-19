@@ -345,7 +345,7 @@ public class FriendsActivity extends DrawerActivity implements AdapterView.OnIte
                 } else {
                     Intent intent = new Intent(this, AddReminderActivity.class);
                     intent.putExtra("userID", userID);
-                    intent.putExtra("userDisplayName", user.getName());
+                    intent.putExtra("userDisplayName", user.getName() + (userID.equals(Utils.getCurrentUserID(this)) ? " (Self)" : ""));
                     startActivity(intent);
                 }
                 break;
