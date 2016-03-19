@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import in.incognitech.reminder.R;
 import in.incognitech.reminder.model.Reminder;
@@ -76,12 +77,19 @@ public class ReminderCard extends Card {
 
             TextView dateView = (TextView) parent.findViewById(R.id.reminder_date);
             if (dateView != null) {
-                DateFormat format = new SimpleDateFormat(Constants.DATE_FORMAT);
+                DateFormat utcFormat = new SimpleDateFormat(Constants.DATE_FORMAT);
+                utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                 Calendar calendar = Calendar.getInstance();
                 try {
-                    Date date = format.parse(reminder.getReminderDate());
-                    calendar.setTime(date);
-                    String dateStr = "" + calendar.get(Calendar.DATE) + " " + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()) + ", " + calendar.get(Calendar.YEAR);
+                    Date utcDate = utcFormat.parse(reminder.getReminderDateGMT());
+                    DateFormat tzFormat = new SimpleDateFormat(Constants.DATE_FORMAT);
+                    tzFormat.setTimeZone(TimeZone.getDefault());
+                    String tzDateStr = tzFormat.format(utcDate);
+                    Date tzDate = tzFormat.parse(tzDateStr);
+                    calendar.setTime(tzDate);
+                    String dateStr = "" + calendar.get(Calendar.DATE) + " "
+                            + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()) + ", "
+                            + calendar.get(Calendar.YEAR);
                     dateView.setText(dateStr);
                 } catch (ParseException e) {
                     e.printStackTrace();

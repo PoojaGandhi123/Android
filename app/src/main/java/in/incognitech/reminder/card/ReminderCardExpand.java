@@ -9,10 +9,19 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import in.incognitech.reminder.R;
 import in.incognitech.reminder.db.FriendDbHelper;
 import in.incognitech.reminder.model.Reminder;
 import in.incognitech.reminder.model.User;
+import in.incognitech.reminder.util.Constants;
 import it.gmariotti.cardslib.library.internal.CardExpand;
 
 /**
@@ -36,7 +45,26 @@ public class ReminderCardExpand extends CardExpand {
 
             TextView reminderTimestampView = (TextView) parent.findViewById(R.id.reminder_timestamp);
             if ( reminderTimestampView != null ) {
-                reminderTimestampView.setText(reminder.getReminderDate());
+                DateFormat utcFormat = new SimpleDateFormat(Constants.DATE_FORMAT);
+                utcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                Calendar calendar = Calendar.getInstance();
+                try {
+                    Date utcDate = utcFormat.parse(reminder.getReminderDateGMT());
+                    DateFormat tzFormat = new SimpleDateFormat(Constants.DATE_FORMAT);
+                    tzFormat.setTimeZone(TimeZone.getDefault());
+                    String tzDateStr = tzFormat.format(utcDate);
+                    Date tzDate = tzFormat.parse(tzDateStr);
+                    calendar.setTime(tzDate);
+                    String dateStr = "" + calendar.get(Calendar.DATE) + " "
+                        + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()) + ", "
+                        + calendar.get(Calendar.YEAR) + " "
+                        + calendar.get(Calendar.HOUR_OF_DAY) + ":"
+                        + calendar.get(Calendar.MINUTE) + ":"
+                        + calendar.get(Calendar.SECOND);
+                    reminderTimestampView.setText(dateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
 
             User author = FriendDbHelper.getFriend(mContext, reminder.getAuthor());
