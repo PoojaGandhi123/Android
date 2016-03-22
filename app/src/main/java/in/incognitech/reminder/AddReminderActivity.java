@@ -132,7 +132,7 @@ public class AddReminderActivity extends DrawerActivity implements ValueEventLis
                     newReminder.setReminderDate(DateUtils.toString(myCalender.getTime()));
                     newReminder.setReminderDateGMT(DateUtils.toGMT(myCalender.getTime()));
                     newReminder.setFriend(userID);
-                    newReminder.setKey(reminderID);
+                    newReminder.setId(reminderID);
 
                     if(reminderContext == REMINDER_CONTEXT_ADD) {
                         ReminderAdapter.addReminder(newReminder);

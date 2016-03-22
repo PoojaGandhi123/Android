@@ -60,7 +60,7 @@ public class ReminderAdapter extends CardArrayAdapter
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        reminder.setKey(dataSnapshot.getKey());
+        reminder.setId(dataSnapshot.getKey());
         this.reminders.add(reminder);
         this.add(this.createCard(reminder));
         this.notifyDataSetChanged();
@@ -69,7 +69,7 @@ public class ReminderAdapter extends CardArrayAdapter
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        reminder.setKey(dataSnapshot.getKey());
+        reminder.setId(dataSnapshot.getKey());
         int position = this.searchReminderByKey(dataSnapshot.getKey());
         if(position != -1) {
             Card oldCard = this.getItem(position);
@@ -86,7 +86,7 @@ public class ReminderAdapter extends CardArrayAdapter
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        reminder.setKey(dataSnapshot.getKey());
+        reminder.setId(dataSnapshot.getKey());
         int position = this.searchReminderByKey(dataSnapshot.getKey());
         if(position != -1) {
             this.reminders.remove(position);
@@ -98,7 +98,7 @@ public class ReminderAdapter extends CardArrayAdapter
     @Override
     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
         Reminder reminder = dataSnapshot.getValue(Reminder.class);
-        reminder.setKey(dataSnapshot.getKey());
+        reminder.setId(dataSnapshot.getKey());
         int position = this.searchReminderByKey(dataSnapshot.getKey());
         if(position != -1) {
             this.reminders.remove(position);
@@ -117,10 +117,10 @@ public class ReminderAdapter extends CardArrayAdapter
         User friend = FriendDbHelper.getFriend(mContext, reminder.getFriend());
 
         ReminderCard card = new ReminderCard(mContext, R.layout.card);
-        card.setId(reminder.getKey());
+        card.setId(reminder.getId());
         card.setReminder(reminder);
         card.setFriend(friend);
-        card.setId(reminder.getKey());
+        card.setId(reminder.getId());
         card.setSwipeable(true);
 
         card.setOnSwipeListener(this);
@@ -175,7 +175,7 @@ public class ReminderAdapter extends CardArrayAdapter
         int position = -1;
         for (int i = 0; i<this.reminders.size();i++) {
             Reminder temp = this.reminders.get(i);
-            if(temp.getKey().equals(key)) {
+            if(temp.getId().equals(key)) {
                 position = i;
                 break;
             }
@@ -206,9 +206,9 @@ public class ReminderAdapter extends CardArrayAdapter
 
     public static void updateReminder(Reminder reminder) {
 
-        String key = reminder.getKey();
+        String key = reminder.getId();
 
-        reminder.setKey(null);
+        reminder.setId(null);
         Map<String, Object> map = reminder.convertToMap();
 
         Firebase fbReminderRef = FirebaseAPI.getInstance().child(Constants.FIREBASE_REMINDERS_PATH).child(key);
